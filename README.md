@@ -48,6 +48,36 @@ vs whole-document?
 
 ---
 
+## Iteration Summary
+
+### Phase 1: Foundation, Eval Harness & the Chunking Question — 2026-06-01
+
+<table>
+<tr>
+<td valign="top" width="38%">
+
+**What was tested:** A 7-way chunking ablation (fixed 128/256/512/1024, recursive, sentence, whole-doc) on NFCorpus, after validating the eval harness against published BEIR BM25 numbers (SciFact 0.6523 vs ≈0.665; NFCorpus 0.3071 vs ≈0.325). Best chunker `sentence` hit **nDCG@10 0.3303**.<br><br>
+**What worked best:** `sentence` chunking (+3.6% vs whole-doc) — it wins by granularity *below* the encoder window, ranking the first relevant passage higher (MRR@10 0.530 vs 0.507), not by recovering truncated text.
+
+</td>
+<td align="center" width="24%">
+
+<img src="results/chunking_comparison.png" width="220">
+
+</td>
+<td valign="top" width="38%">
+
+**Key Insight:** Chunking is encoder-bounded, not free lift — fixed 256/512/1024 span just 0.004 nDCG@10. "Use 512–1024 token chunks" is contingent on a long-context embedder, not a law.<br><br>
+**Surprise:** 78.6% of NFCorpus docs overflow the 256-token window, yet chunking buys only +3.6% — and `recursive_256` (−0.4%) and `fixed_512` (−0.7%) actually *underperformed* doing nothing.<br><br>
+**Research:** Chroma Research, 2024 — reported a ~9% recall spread across chunkers, so we expected chunking to matter a lot (it didn't, with a 256-tok encoder). NVIDIA, 2024 — page-level chunking won, framing the granularity ablation.<br><br>
+**Best Model So Far:** Dense MiniLM + `sentence` chunking — NFCorpus nDCG@10 **0.3303** (SciFact BM25 0.6523 validates the harness).
+
+</td>
+</tr>
+</table>
+
+---
+
 ## Roadmap
 | Phase | Focus | Status |
 |------:|-------|--------|
