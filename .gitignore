@@ -1,0 +1,21 @@
+# Data & models (downloaded/regenerated, never committed)
+data/raw/
+data/processed/
+models/*.bin
+models/*.pkl
+models/*.faiss
+*.npy
+
+# Python
+__pycache__/
+*.pyc
+.venv/
+venv/
+.ipynb_checkpoints/
+
+# OS
+.DS_Store
+
+# HF / caches
+.cache/
+*.lock

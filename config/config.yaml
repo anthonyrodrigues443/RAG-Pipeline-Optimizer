@@ -1,0 +1,29 @@
+# RAG Pipeline Optimizer — central config
+seed: 42
+
+datasets:
+  scifact:
+    hf_corpus: "BeIR/scifact"
+    hf_qrels: "BeIR/scifact-qrels"
+    split: "test"
+    role: "baseline benchmark (clean, sparse binary qrels, published BM25 nDCG@10≈0.665)"
+  nfcorpus:
+    hf_corpus: "BeIR/nfcorpus"
+    hf_qrels: "BeIR/nfcorpus-qrels"
+    split: "test"
+    role: "chunking study (graded qrels, longer medical docs)"
+
+embeddings:
+  primary_model: "sentence-transformers/all-MiniLM-L6-v2"  # 384d, 256-token max — phase 2 will compare alternatives
+  batch_size: 256
+
+# Primary metric chosen in Phase 1 (see day1 report for rationale)
+metrics:
+  primary: "ndcg@10"
+  secondary: ["recall@10", "recall@100", "mrr@10"]
+  k_values: [1, 3, 5, 10, 20, 100]
+
+chunking:
+  strategies: ["doc", "fixed_256", "fixed_512", "fixed_1024", "recursive_512", "sentence"]
+  overlap_ratio: 0.15
+  aggregation: "max"   # parent-doc score = max over its chunk scores

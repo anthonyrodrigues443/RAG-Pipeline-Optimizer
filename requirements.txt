@@ -1,0 +1,14 @@
+datasets>=2.19
+sentence-transformers>=2.7
+faiss-cpu>=1.8
+rank-bm25>=0.2.2
+nltk>=3.8
+scikit-learn>=1.4
+numpy>=1.26
+pandas>=2.2
+matplotlib>=3.8
+seaborn>=0.13
+tqdm>=4.66
+ipykernel>=6.29
+jupyter>=1.0
+pyyaml>=6.0

@@ -1,0 +1,182 @@
+{
+  "phase": 1,
+  "date": "2026-06-01",
+  "primary_metric": "ndcg@10",
+  "encoder": "sentence-transformers/all-MiniLM-L6-v2",
+  "encoder_window_tokens": 256,
+  "device": "cpu",
+  "eda": [
+    {
+      "dataset": "scifact",
+      "docs": 5183,
+      "tok_mean": 336.0,
+      "tok_median": 315,
+      "tok_p90": 501,
+      "tok_max": 1938,
+      "pct_over_256": 70.8
+    },
+    {
+      "dataset": "nfcorpus",
+      "docs": 3633,
+      "tok_mean": 356.0,
+      "tok_median": 356,
+      "tok_p90": 503,
+      "tok_max": 2376,
+      "pct_over_256": 78.6
+    }
+  ],
+  "baselines": {
+    "scifact/BM25": {
+      "ndcg@1": 0.5233,
+      "ndcg@3": 0.6121,
+      "ndcg@5": 0.6352,
+      "ndcg@10": 0.6523,
+      "ndcg@20": 0.6667,
+      "ndcg@100": 0.6758,
+      "recall@1": 0.5075,
+      "recall@3": 0.6733,
+      "recall@5": 0.7268,
+      "recall@10": 0.7757,
+      "recall@20": 0.8312,
+      "recall@100": 0.8731,
+      "mrr@1": 0.5233,
+      "mrr@3": 0.5989,
+      "mrr@5": 0.6126,
+      "mrr@10": 0.6184,
+      "mrr@20": 0.6221,
+      "mrr@100": 0.6231
+    },
+    "nfcorpus/BM25": {
+      "ndcg@1": 0.4087,
+      "ndcg@3": 0.3562,
+      "ndcg@5": 0.3332,
+      "ndcg@10": 0.3071,
+      "ndcg@20": 0.282,
+      "ndcg@100": 0.2683,
+      "recall@1": 0.0565,
+      "recall@3": 0.0988,
+      "recall@5": 0.115,
+      "recall@10": 0.1522,
+      "recall@20": 0.1724,
+      "recall@100": 0.2425,
+      "mrr@1": 0.4272,
+      "mrr@3": 0.4845,
+      "mrr@5": 0.4992,
+      "mrr@10": 0.5085,
+      "mrr@20": 0.5098,
+      "mrr@100": 0.5114
+    },
+    "scifact/Dense-MiniLM": {
+      "ndcg@1": 0.5033,
+      "ndcg@3": 0.597,
+      "ndcg@5": 0.6321,
+      "ndcg@10": 0.6484,
+      "ndcg@20": 0.663,
+      "ndcg@100": 0.6783,
+      "recall@1": 0.4846,
+      "recall@3": 0.6564,
+      "recall@5": 0.7413,
+      "recall@10": 0.7883,
+      "recall@20": 0.844,
+      "recall@100": 0.925,
+      "mrr@1": 0.5033,
+      "mrr@3": 0.5833,
+      "mrr@5": 0.6015,
+      "mrr@10": 0.6068,
+      "mrr@20": 0.6105,
+      "mrr@100": 0.6123
+    },
+    "nfcorpus/Dense-MiniLM": {
+      "ndcg@1": 0.3973,
+      "ndcg@3": 0.364,
+      "ndcg@5": 0.3417,
+      "ndcg@10": 0.3189,
+      "ndcg@20": 0.2983,
+      "ndcg@100": 0.3023,
+      "recall@1": 0.0438,
+      "recall@3": 0.0932,
+      "recall@5": 0.1188,
+      "recall@10": 0.1589,
+      "recall@20": 0.1884,
+      "recall@100": 0.3148,
+      "mrr@1": 0.4241,
+      "mrr@3": 0.4856,
+      "mrr@5": 0.502,
+      "mrr@10": 0.5083,
+      "mrr@20": 0.5105,
+      "mrr@100": 0.5137
+    }
+  },
+  "nfcorpus_chunking": [
+    {
+      "strategy": "sentence",
+      "n_chunks": 37372,
+      "ndcg@10": 0.3303,
+      "recall@10": 0.1639,
+      "recall@100": 0.3083,
+      "mrr@10": 0.5296,
+      "sec": 444.4
+    },
+    {
+      "strategy": "fixed_128",
+      "n_chunks": 13100,
+      "ndcg@10": 0.3282,
+      "recall@10": 0.1648,
+      "recall@100": 0.3168,
+      "mrr@10": 0.5138,
+      "sec": 220.3
+    },
+    {
+      "strategy": "fixed_256",
+      "n_chunks": 7099,
+      "ndcg@10": 0.3208,
+      "recall@10": 0.1591,
+      "recall@100": 0.3113,
+      "mrr@10": 0.5106,
+      "sec": 223.9
+    },
+    {
+      "strategy": "fixed_1024",
+      "n_chunks": 3644,
+      "ndcg@10": 0.3193,
+      "recall@10": 0.1589,
+      "recall@100": 0.3149,
+      "mrr@10": 0.5104,
+      "sec": 127.5
+    },
+    {
+      "strategy": "doc",
+      "n_chunks": 3633,
+      "ndcg@10": 0.3188,
+      "recall@10": 0.1589,
+      "recall@100": 0.3149,
+      "mrr@10": 0.5068,
+      "sec": 119.4
+    },
+    {
+      "strategy": "recursive_256",
+      "n_chunks": 7056,
+      "ndcg@10": 0.3175,
+      "recall@10": 0.1571,
+      "recall@100": 0.3142,
+      "mrr@10": 0.5115,
+      "sec": 282.9
+    },
+    {
+      "strategy": "fixed_512",
+      "n_chunks": 3980,
+      "ndcg@10": 0.3164,
+      "recall@10": 0.1586,
+      "recall@100": 0.3107,
+      "mrr@10": 0.5071,
+      "sec": 151.6
+    }
+  ],
+  "headline": {
+    "best_strategy": "sentence",
+    "best_ndcg10": 0.3303,
+    "whole_doc_ndcg10": 0.3188,
+    "lift_pct_vs_doc": 3.6,
+    "encoder_ceiling_spread_256_512_1024": 0.0043999999999999595
+  }
+}
