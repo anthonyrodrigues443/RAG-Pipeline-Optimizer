@@ -119,6 +119,19 @@ chunk scores to the parent doc, score with the validated harness.
 - Max-pooling chunk→doc means a single strong chunk can carry a doc; this helps `sentence` (many shots on goal) but
   also lets an off-topic sentence occasionally float a wrong doc — a candidate for Phase 4 error analysis.
 
+## Known methodological notes (from second-model review)
+- **Gain convention.** `dcg()` uses exponential gain `2^rel−1`. This is identical to trec_eval/BEIR's
+  *linear* gain on binary qrels (so the SciFact validation is exact), but on graded NFCorpus (rel∈{1,2}) it
+  weights rel=2 docs slightly more than BEIR. It is a monotonic transform applied identically across all
+  strategies, so the chunking *ranking* is unaffected — but the NFCorpus *absolute* nDCG is not strictly
+  BEIR-comparable. A linear-gain parity check against `pytrec_eval` is queued for Phase 2.
+- **Test-set reporting.** The chunking winner is reported on NFCorpus `test`. For a single-shot Phase 1 answer
+  this is fine; from Phase 2 onward, strategy/hyperparameter selection moves to a dev split with `test` held for
+  a final one-shot report.
+- **Max-pool approximation.** Parent-doc scores max-pool over the top-300 retrieved chunks (not all chunks);
+  with ≤37k chunks and top-100 parent output this is effectively exact, but Phase 2 will assert each query yields
+  ≥`topk` unique parents.
+
 ## Frontier Model Comparison
 Deferred to Phase 5 (LLM head-to-head is the Friday deliverable per the project plan).
 

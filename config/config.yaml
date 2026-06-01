@@ -24,6 +24,8 @@ metrics:
   k_values: [1, 3, 5, 10, 20, 100]
 
 chunking:
-  strategies: ["doc", "fixed_256", "fixed_512", "fixed_1024", "recursive_512", "sentence"]
+  # exact set run in the Phase 1 ablation (notebook CHUNKERS registry)
+  strategies: ["doc", "fixed_128", "fixed_256", "fixed_512", "fixed_1024", "recursive_256", "sentence"]
   overlap_ratio: 0.15
-  aggregation: "max"   # parent-doc score = max over its chunk scores
+  aggregation: "max"        # parent-doc score = max over its chunk scores
+  chunk_topk: 300           # chunks retrieved per query before max-pool to parent

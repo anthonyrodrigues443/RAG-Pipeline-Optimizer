@@ -14,6 +14,14 @@ Qrels = Dict[str, Dict[str, int]]   # qid -> {doc_id: gain}
 
 
 def dcg(gains: Sequence[float]) -> float:
+    """DCG with **exponential** gain ``2^rel - 1`` (Burges et al. / sklearn convention).
+
+    Note: this coincides with trec_eval/BEIR's *linear* gain on binary qrels (rel∈{0,1}),
+    so the SciFact validation is exact. On graded qrels (NFCorpus, rel∈{1,2}) it weights
+    rel=2 slightly more than BEIR's linear gain — a monotonic transform applied identically
+    to every strategy, so the chunking *ranking* is unaffected. A linear-gain parity pass
+    against pytrec_eval is queued for Phase 2 (see reports/day1_phase1_report.md).
+    """
     g = np.asarray(gains, dtype=float)
     if g.size == 0:
         return 0.0
@@ -21,16 +29,26 @@ def dcg(gains: Sequence[float]) -> float:
 
 
 def evaluate(run: Run, qrels: Qrels, ks: Sequence[int] = (1, 3, 5, 10, 20, 100)) -> Dict[str, float]:
-    """Mean nDCG@k, Recall@k and MRR@k over all queries that have judgments."""
+    """Mean nDCG@k, Recall@k and MRR@k over **all judged queries**.
+
+    Iterating over ``qrels`` (not ``run``) means a query missing from the run scores 0
+    instead of being silently dropped; ranked doc-ids are de-duplicated per query so a
+    malformed run cannot push Recall above 1.
+    """
     out: Dict[str, List[float]] = {}
     for k in ks:
         out[f"ndcg@{k}"] = []
         out[f"recall@{k}"] = []
         out[f"mrr@{k}"] = []
-    for qid, ranked in run.items():
-        gold = qrels.get(qid, {})
+    for qid, gold in qrels.items():
         if not gold:
             continue
+        # de-dup ranked ids, keeping first (best) occurrence
+        seen, ranked = set(), []
+        for d in run.get(qid, []):
+            if d not in seen:
+                seen.add(d)
+                ranked.append(d)
         n_rel = sum(1 for g in gold.values() if g > 0)
         gains = [gold.get(d, 0) for d in ranked]
         ideal = sorted(gold.values(), reverse=True)
