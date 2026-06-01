@@ -1,8 +1,10 @@
 """Chunking strategies benchmarked in Phase 1.
 
-Each function takes raw document text and a HuggingFace tokenizer (for token-accurate
-sizing) and returns a list of chunk strings. Phase 1 finding: with a 256-token encoder,
-nominal chunk sizes above the window are statistically equal to no chunking.
+Each function takes raw document text and returns a list of chunk strings. The
+token-budgeted chunkers (``chunk_fixed``, ``chunk_recursive``) also take a HuggingFace
+tokenizer for token-accurate sizing; ``chunk_sentence`` splits on sentences and needs no
+tokenizer. Phase 1 finding: with a 256-token encoder, nominal chunk sizes above the
+window are statistically equal to no chunking.
 """
 from __future__ import annotations
 
