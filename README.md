@@ -76,13 +76,39 @@ vs whole-document?
 </tr>
 </table>
 
+### Phase 2: Embedding Head-to-Head & the Chunking-vs-Context-Window Law — 2026-06-02
+
+<table>
+<tr>
+<td valign="top" width="38%">
+
+**What was tested:** A 4-encoder leaderboard (MiniLM/BGE-small/E5-base-v2/Nomic-v1.5) on the same validated harness, then a chunking-law sweep across 256→512→8192-token windows. Winner **E5-base-v2** hit nDCG@10 **0.7274 (SciFact) / 0.3529 (NFCorpus)** — the MiniLM→E5 jump is +12.2% / +10.7%, ~3× any chunking gain.<br><br>
+**What worked best:** E5-base-v2 (whole-doc, 512-window, 768d) won both datasets. The encoder is the dominant lever — pick it before tuning chunk size.
+
+</td>
+<td align="center" width="24%">
+
+<img src="results/phase2_chunk_law.png" width="220">
+
+</td>
+<td valign="top" width="38%">
+
+**Key Insight:** THE LAW — best-chunker lift over whole-doc falls monotonically as the encoder window grows: +2.9% @256 → +2.1% @512 → +0.4% @8192. Chunking is a crutch for short-context encoders, not a universal win. Phase-1's falsifiable prediction confirmed.<br><br>
+**Surprise:** Hybrid RRF (BM25+E5) *lowered* nDCG@10 on both datasets — fusing a far-weaker lexical ranker pollutes the top ranks. It only helped deep recall (NFCorpus R@100 0.3197→0.3255). RRF pays only when both retrievers are comparably strong.<br><br>
+**Research:** Nussbaum et al., 2024 (Nomic Embed) — open 8192-token embedder, so we used it as the long-context data point that breaks the chunking law. Cormack et al., 2009 (RRF) — score-free fusion, so we tried it for hybrid (and found its precondition).<br><br>
+**Best Model So Far:** E5-base-v2 (whole-doc) — SciFact nDCG@10 **0.7274**, NFCorpus **0.3529**; carried forward as the default encoder.
+
+</td>
+</tr>
+</table>
+
 ---
 
 ## Roadmap
 | Phase | Focus | Status |
 |------:|-------|--------|
 | 1 | Chunking — fixed/recursive/semantic/sentence/doc; build + validate eval harness | ✅ |
-| 2 | Embeddings head-to-head (MiniLM vs BGE vs E5 vs GTE vs long-context) + hybrid BM25+dense | ⏳ |
+| 2 | Embeddings head-to-head (MiniLM vs BGE vs E5 vs GTE vs long-context) + hybrid BM25+dense | ✅ |
 | 3 | Retrieval — dense vs sparse vs hybrid fusion; index structures | ⏳ |
 | 4 | Re-ranking — cross-encoder / ColBERT; tuning + error analysis | ⏳ |
 | 5 | Query techniques (HyDE, multi-query, step-back) + **LLM head-to-head** | ⏳ |
