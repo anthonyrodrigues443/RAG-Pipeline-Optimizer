@@ -1,0 +1,4 @@
+model,window,doc_ndcg10,best_chunker,best_ndcg10,chunk_lift,lift_pct
+MiniLM-L6,256,0.3189,fixed_128,0.3282,0.0093,2.9
+BGE-small,512,0.3444,fixed_256,0.3517,0.0073,2.1
+Nomic-v1.5,8192,0.3471,fixed_128,0.3485,0.0014,0.4
