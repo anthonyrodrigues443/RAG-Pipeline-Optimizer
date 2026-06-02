@@ -178,5 +178,344 @@
     "whole_doc_ndcg10": 0.3188,
     "lift_pct_vs_doc": 3.6,
     "encoder_ceiling_spread_256_512_1024": 0.0043999999999999595
+  },
+  "phase2": {
+    "phase": 2,
+    "date": "2026-06-02",
+    "primary_metric": "ndcg@10",
+    "models": {
+      "MiniLM-L6": {
+        "window": 256,
+        "dim": 384
+      },
+      "BGE-small": {
+        "window": 512,
+        "dim": 384
+      },
+      "E5-base-v2": {
+        "window": 512,
+        "dim": 768
+      },
+      "Nomic-v1.5": {
+        "window": 8192,
+        "dim": 768
+      }
+    },
+    "leaderboard": [
+      {
+        "dataset": "nfcorpus",
+        "model": "E5-base-v2",
+        "win": 512,
+        "dim": 768,
+        "ndcg@10": 0.3529,
+        "recall@10": 0.1706,
+        "recall@100": 0.3197,
+        "mrr@10": 0.5403
+      },
+      {
+        "dataset": "nfcorpus",
+        "model": "Nomic-v1.5",
+        "win": 8192,
+        "dim": 768,
+        "ndcg@10": 0.3471,
+        "recall@10": 0.1711,
+        "recall@100": 0.2984,
+        "mrr@10": 0.5307
+      },
+      {
+        "dataset": "nfcorpus",
+        "model": "BGE-small",
+        "win": 512,
+        "dim": 384,
+        "ndcg@10": 0.3444,
+        "recall@10": 0.1618,
+        "recall@100": 0.3125,
+        "mrr@10": 0.5272
+      },
+      {
+        "dataset": "nfcorpus",
+        "model": "MiniLM-L6",
+        "win": 256,
+        "dim": 384,
+        "ndcg@10": 0.3189,
+        "recall@10": 0.1589,
+        "recall@100": 0.3148,
+        "mrr@10": 0.5083
+      },
+      {
+        "dataset": "nfcorpus",
+        "model": "BM25",
+        "win": "-",
+        "dim": "-",
+        "ndcg@10": 0.3071,
+        "recall@10": 0.1522,
+        "recall@100": 0.2425,
+        "mrr@10": 0.5085
+      },
+      {
+        "dataset": "scifact",
+        "model": "E5-base-v2",
+        "win": 512,
+        "dim": 768,
+        "ndcg@10": 0.7274,
+        "recall@10": 0.8507,
+        "recall@100": 0.9627,
+        "mrr@10": 0.6931
+      },
+      {
+        "dataset": "scifact",
+        "model": "Nomic-v1.5",
+        "win": 8192,
+        "dim": 768,
+        "ndcg@10": 0.7076,
+        "recall@10": 0.8536,
+        "recall@100": 0.9317,
+        "mrr@10": 0.6694
+      },
+      {
+        "dataset": "scifact",
+        "model": "BGE-small",
+        "win": 512,
+        "dim": 384,
+        "ndcg@10": 0.7057,
+        "recall@10": 0.8296,
+        "recall@100": 0.9433,
+        "mrr@10": 0.6725
+      },
+      {
+        "dataset": "scifact",
+        "model": "BM25",
+        "win": "-",
+        "dim": "-",
+        "ndcg@10": 0.6523,
+        "recall@10": 0.7757,
+        "recall@100": 0.8731,
+        "mrr@10": 0.6184
+      },
+      {
+        "dataset": "scifact",
+        "model": "MiniLM-L6",
+        "win": 256,
+        "dim": 384,
+        "ndcg@10": 0.6484,
+        "recall@10": 0.7883,
+        "recall@100": 0.925,
+        "mrr@10": 0.6068
+      }
+    ],
+    "chunk_law": [
+      {
+        "model": "MiniLM-L6",
+        "win": 256,
+        "strategy": "doc",
+        "n_chunks": 3633,
+        "ndcg10": 0.3189,
+        "recall100": 0.3148,
+        "mrr10": 0.5083
+      },
+      {
+        "model": "MiniLM-L6",
+        "win": 256,
+        "strategy": "fixed_128",
+        "n_chunks": 13100,
+        "ndcg10": 0.3282,
+        "recall100": 0.3168,
+        "mrr10": 0.5138
+      },
+      {
+        "model": "MiniLM-L6",
+        "win": 256,
+        "strategy": "fixed_256",
+        "n_chunks": 7099,
+        "ndcg10": 0.3208,
+        "recall100": 0.3113,
+        "mrr10": 0.5106
+      },
+      {
+        "model": "MiniLM-L6",
+        "win": 256,
+        "strategy": "fixed_512",
+        "n_chunks": 3980,
+        "ndcg10": 0.3164,
+        "recall100": 0.3107,
+        "mrr10": 0.5071
+      },
+      {
+        "model": "BGE-small",
+        "win": 512,
+        "strategy": "doc",
+        "n_chunks": 3633,
+        "ndcg10": 0.3444,
+        "recall100": 0.3125,
+        "mrr10": 0.5272
+      },
+      {
+        "model": "BGE-small",
+        "win": 512,
+        "strategy": "fixed_128",
+        "n_chunks": 13100,
+        "ndcg10": 0.3446,
+        "recall100": 0.3086,
+        "mrr10": 0.5334
+      },
+      {
+        "model": "BGE-small",
+        "win": 512,
+        "strategy": "fixed_256",
+        "n_chunks": 7099,
+        "ndcg10": 0.3517,
+        "recall100": 0.3124,
+        "mrr10": 0.5354
+      },
+      {
+        "model": "BGE-small",
+        "win": 512,
+        "strategy": "fixed_512",
+        "n_chunks": 3980,
+        "ndcg10": 0.345,
+        "recall100": 0.3119,
+        "mrr10": 0.5314
+      },
+      {
+        "model": "Nomic-v1.5",
+        "win": 8192,
+        "strategy": "doc",
+        "n_chunks": 3633,
+        "ndcg10": 0.3471,
+        "recall100": 0.2984,
+        "mrr10": 0.5307
+      },
+      {
+        "model": "Nomic-v1.5",
+        "win": 8192,
+        "strategy": "fixed_128",
+        "n_chunks": 13100,
+        "ndcg10": 0.3485,
+        "recall100": 0.2989,
+        "mrr10": 0.5344
+      },
+      {
+        "model": "Nomic-v1.5",
+        "win": 8192,
+        "strategy": "fixed_256",
+        "n_chunks": 7099,
+        "ndcg10": 0.3477,
+        "recall100": 0.2915,
+        "mrr10": 0.5396
+      },
+      {
+        "model": "Nomic-v1.5",
+        "win": 8192,
+        "strategy": "fixed_512",
+        "n_chunks": 3980,
+        "ndcg10": 0.3445,
+        "recall100": 0.2971,
+        "mrr10": 0.5286
+      }
+    ],
+    "chunk_law_summary": [
+      {
+        "model": "MiniLM-L6",
+        "window": 256,
+        "doc_ndcg10": 0.3189,
+        "best_chunker": "fixed_128",
+        "best_ndcg10": 0.3282,
+        "chunk_lift": 0.0093,
+        "lift_pct": 2.9
+      },
+      {
+        "model": "BGE-small",
+        "window": 512,
+        "doc_ndcg10": 0.3444,
+        "best_chunker": "fixed_256",
+        "best_ndcg10": 0.3517,
+        "chunk_lift": 0.0073,
+        "lift_pct": 2.1
+      },
+      {
+        "model": "Nomic-v1.5",
+        "window": 8192,
+        "doc_ndcg10": 0.3471,
+        "best_chunker": "fixed_128",
+        "best_ndcg10": 0.3485,
+        "chunk_lift": 0.0014,
+        "lift_pct": 0.4
+      }
+    ],
+    "hybrid": [
+      {
+        "dataset": "scifact",
+        "system": "BM25",
+        "ndcg10": 0.6523,
+        "recall10": 0.7757,
+        "recall100": 0.8731,
+        "mrr10": 0.6184
+      },
+      {
+        "dataset": "scifact",
+        "system": "Dense:E5-base-v2",
+        "ndcg10": 0.7274,
+        "recall10": 0.8507,
+        "recall100": 0.9627,
+        "mrr10": 0.6931
+      },
+      {
+        "dataset": "scifact",
+        "system": "Hybrid-RRF",
+        "ndcg10": 0.7197,
+        "recall10": 0.8392,
+        "recall100": 0.9627,
+        "mrr10": 0.6899
+      },
+      {
+        "dataset": "nfcorpus",
+        "system": "BM25",
+        "ndcg10": 0.3071,
+        "recall10": 0.1522,
+        "recall100": 0.2425,
+        "mrr10": 0.5085
+      },
+      {
+        "dataset": "nfcorpus",
+        "system": "Dense:E5-base-v2",
+        "ndcg10": 0.3529,
+        "recall10": 0.1706,
+        "recall100": 0.3197,
+        "mrr10": 0.5403
+      },
+      {
+        "dataset": "nfcorpus",
+        "system": "Hybrid-RRF",
+        "ndcg10": 0.3457,
+        "recall10": 0.1648,
+        "recall100": 0.3255,
+        "mrr10": 0.5418
+      }
+    ],
+    "linear_gain_parity": {
+      "table": [
+        {
+          "model": "E5-base-v2",
+          "ndcg10_exp": 0.3529,
+          "ndcg10_linear": 0.3522
+        },
+        {
+          "model": "Nomic-v1.5",
+          "ndcg10_exp": 0.3471,
+          "ndcg10_linear": 0.3464
+        },
+        {
+          "model": "BGE-small",
+          "ndcg10_exp": 0.3444,
+          "ndcg10_linear": 0.3428
+        },
+        {
+          "model": "MiniLM-L6",
+          "ndcg10_exp": 0.3189,
+          "ndcg10_linear": 0.3181
+        }
+      ],
+      "kendall_tau": 1.0
+    }
   }
 }
