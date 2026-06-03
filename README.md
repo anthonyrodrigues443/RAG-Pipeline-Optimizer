@@ -102,6 +102,32 @@ vs whole-document?
 </tr>
 </table>
 
+### Phase 3: Retrieval Index Structure & the ANN Crossover — 2026-06-03
+
+<table>
+<tr>
+<td valign="top" width="38%">
+
+**What was tested:** Which FAISS index (Flat/IVF/HNSW/IVFPQ) to put E5 embeddings in, and at what corpus size an approximate index stops being a liability — traced across 3.6k→57k vectors after embedding a third BEIR corpus, FiQA-2018 (57,638 docs). Headline: at 57k, HNSW `ef=128` is **5.6× faster than exact Flat** (0.37 ms vs 2.08 ms) for just −0.004 nDCG@10.<br><br>
+**What worked best:** Below ~10k vectors, a 2-line NumPy/Flat matmul wins on quality, latency, build time AND RAM. HNSW only earns its keep past the crossover (~40k+).
+
+</td>
+<td align="center" width="24%">
+
+<img src="results/phase3_crossover.png" width="220">
+
+</td>
+<td valign="top" width="38%">
+
+**Key Insight:** The decision crossover is ~tens of thousands of vectors. HNSW technically passes Flat at N≈1k but the gap only clears a meaningful 1 ms at ~40k. Most RAG knowledge bases (10³–10⁵ vectors) are below the point where an ANN index helps.<br><br>
+**Surprise:** IVF is Pareto-dominated by HNSW at *every* N — exact-quality IVF (`nprobe=nlist`) is **slower than brute force even at 57k** (3.12 ms vs Flat's 2.08 ms), and IVF `nprobe=1` throws away 47% nDCG@10 to save 0.36 ms.<br><br>
+**Research:** Johnson, Douze & Jégou, 2019 (FAISS) — the IVF/PQ knobs and `nlist≈4·√N` heuristic. Couchbase/BigData Boutique, 2025 — the cited "HNSW 70× faster" claim measured at **10M** vectors, which this phase stress-tested at RAG scale and found doesn't transfer. Bonus: Nomic long-doc *dilution* hypothesis falsified (Spearman +0.009).<br><br>
+**Best Model So Far:** E5-base-v2 (whole-doc) — SciFact nDCG@10 **0.7274**, NFCorpus **0.3525**, FiQA-2018 **0.3987**; served Flat below ~10k, HNSW `ef=128` above ~40k.
+
+</td>
+</tr>
+</table>
+
 ---
 
 ## Roadmap
@@ -109,7 +135,7 @@ vs whole-document?
 |------:|-------|--------|
 | 1 | Chunking — fixed/recursive/semantic/sentence/doc; build + validate eval harness | ✅ |
 | 2 | Embeddings head-to-head (MiniLM vs BGE vs E5 vs GTE vs long-context) + hybrid BM25+dense | ✅ |
-| 3 | Retrieval — dense vs sparse vs hybrid fusion; index structures | ⏳ |
+| 3 | Retrieval — dense vs sparse vs hybrid fusion; index structures | ✅ |
 | 4 | Re-ranking — cross-encoder / ColBERT; tuning + error analysis | ⏳ |
 | 5 | Query techniques (HyDE, multi-query, step-back) + **LLM head-to-head** | ⏳ |
 | 6 | Generation faithfulness (RAGAS) + production pipeline | ⏳ |
