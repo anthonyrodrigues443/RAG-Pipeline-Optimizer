@@ -1,0 +1,10 @@
+dataset,family,index,ndcg10,R10,R100,lat_ms,build_s,MB
+fiqa,Flat,Flat,0.3987,1.0,1.0,2.0845,0.016,177.06
+fiqa,IVF,IVF nprobe=960,0.3987,1.0,1.0,3.1211,0.929,180.48
+fiqa,HNSW,HNSW ef=128,0.3948,0.9894,0.9493,0.3691,5.88,192.75
+nfcorpus,HNSW,HNSW ef=256,0.3528,0.9935,0.9894,0.2175,0.088,12.15
+nfcorpus,Flat,Flat,0.3525,1.0,1.0,0.1747,0.0,11.16
+nfcorpus,IVF,IVF nprobe=93,0.3525,1.0,0.9999,0.1819,0.011,11.48
+scifact,Flat,Flat,0.7274,1.0,1.0,0.2449,0.001,15.92
+scifact,HNSW,HNSW ef=128,0.7274,0.9987,0.9816,0.1445,0.154,17.33
+scifact,IVF,IVF nprobe=132,0.7274,1.0,1.0,0.2484,0.02,16.37

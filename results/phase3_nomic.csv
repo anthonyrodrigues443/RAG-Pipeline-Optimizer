@@ -1,0 +1,3 @@
+model,median_gold_rank,pct_top100
+E5-base-v2,801.5,0.21282633371169127
+Nomic-v1.5,830.0,0.20366466677476894
