@@ -894,7 +894,7 @@
         "recall5": 0.7371428571428572,
         "lat_ms": 0.0,
         "cost_per_1k": 0.0,
-        "parse_ok": 1.0
+        "strict_ok": 1.0
       },
       {
         "reranker": "GPT-5.x-codex",
@@ -903,7 +903,7 @@
         "recall5": 0.7015079365079365,
         "lat_ms": 15154.255390167236,
         "cost_per_1k": 50.0,
-        "parse_ok": 1.0
+        "strict_ok": 1.0
       },
       {
         "reranker": "MiniLM-L6 (22M)",
@@ -912,7 +912,7 @@
         "recall5": 0.6142857142857143,
         "lat_ms": 49.255235989888504,
         "cost_per_1k": 0.001,
-        "parse_ok": 1.0
+        "strict_ok": 1.0
       },
       {
         "reranker": "Claude-Haiku",
@@ -921,7 +921,7 @@
         "recall5": 0.6456349206349207,
         "lat_ms": 22443.17066669464,
         "cost_per_1k": 1.35,
-        "parse_ok": 1.0
+        "strict_ok": 1.0
       },
       {
         "reranker": "E5 (no rerank)",
@@ -930,7 +930,7 @@
         "recall5": 0.6148412698412699,
         "lat_ms": 2.08,
         "cost_per_1k": 0.0,
-        "parse_ok": 1.0
+        "strict_ok": 1.0
       },
       {
         "reranker": "Claude-Opus",
@@ -939,7 +939,7 @@
         "recall5": 0.6198412698412699,
         "lat_ms": 7174.536466598511,
         "cost_per_1k": 20.2,
-        "parse_ok": 1.0
+        "strict_ok": 1.0
       }
     ],
     "error_analysis": {

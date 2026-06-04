@@ -43,11 +43,11 @@ All re-ranking re-scores E5's top-100 candidates (top-200 retrieved). Re-rankers
 | nfcorpus | 0.3532 | 0.171 | 0.320 | 0.389 | 0.426 | **0.646** | 0.708 |
 | fiqa | 0.3987 | 0.471 | 0.732 | 0.792 | 0.519 | **0.771** | 0.825 |
 
-**Interpretation:** huge headroom exists. On FiQA a perfect re-ranker of the top-100 could reach **0.771** vs E5's 0.399 — the gold docs *are* retrieved, just badly ordered. On SciFact E5 (0.727) is already within 0.001 of oracle@10 (0.854 only by reaching deeper) — almost nothing to gain at shallow depth. The candidate sets are not the bottleneck. The question is whether any *real* re-ranker can convert that headroom.
+**Interpretation:** huge headroom exists. On FiQA a perfect re-ranker of the top-100 could reach **0.771** vs E5's 0.399 — the gold docs *are* retrieved, just badly ordered. On SciFact E5 (nDCG 0.727) sits 0.127 below oracle@10 (0.854) and 0.236 below oracle@100 (0.963), but R@10 is already 0.851 — so the candidates are excellent and any failure to capture the headroom is the *re-ranker's*, not retrieval's. The candidate sets are not the bottleneck. The question is whether any *real* re-ranker can convert that headroom.
 
 ### Exp 4.2 — The cross-encoder zoo (re-score E5 top-100) — **the headline**
 **Hypothesis:** bigger cross-encoder → higher nDCG@10, monotonically.
-**Result:** the opposite. **Every re-ranker on every corpus underperformed the E5 baseline**, and the 278M BGE model was the *worst* on 2 of 3.
+**Result:** the opposite. **Every re-ranker underperformed or merely tied the E5 baseline** — the lone non-negative cell was MiniLM-L12 on NFCorpus at +0.0007 (a statistical tie) — and the 278M BGE model was the *worst* on 2 of 3.
 
 | reranker | params | scifact | nfcorpus | fiqa | mean Δ vs E5 |
 |---|---|---|---|---|---|
@@ -95,7 +95,7 @@ Re-rank BM25, E5, and hybrid candidate sets on FiQA with the *same* MiniLM-L6:
 | E5 (no rerank) | 0.6506 | 0.790 | 2 ms | $0 | — |
 | Claude Opus | 0.6443 | 0.732 | 7.2 s | $20.20 | 100% |
 
-**Interpretation (on the winnable subset — queries with ≥1 retrievable gold in top-10):** the frontier LLM **GPT-5.x is the only re-ranker that meaningfully beats both the cross-encoder and no-rerank** (0.720 vs 0.681 vs 0.651). But it costs **$50/1k and 15 s/query**. The 22M cross-encoder captures ~80% of GPT-5.x's lift-over-baseline at **1/50,000th the cost and 300× the speed** ($0.001/1k, 49 ms). And the mirror of Exp 4.2: the *biggest* model loses — **Claude Opus re-ranking was worse than doing nothing** (0.644 < 0.651), while smaller Haiku helped. Listwise re-ranking quality is not monotone in model size for either family.
+**Interpretation (on the winnable subset — queries with ≥1 retrievable gold in top-10):** the frontier LLM **GPT-5.x is the only re-ranker that meaningfully beats both the cross-encoder and no-rerank** (0.720 vs 0.681 vs 0.651). But it costs **$50/1k and 15 s/query**. The 22M cross-encoder captures ~43% of GPT-5.x's lift-over-baseline — (0.681−0.651)/(0.720−0.651) — at **1/50,000th the cost and 300× the speed** ($0.001/1k, 49 ms). And the mirror of Exp 4.2: the *biggest* model loses — **Claude Opus re-ranking was worse than doing nothing** (0.644 < 0.651), while smaller Haiku helped. Listwise re-ranking quality is not monotone in model size for either family.
 
 ### Exp 4.6 — Error analysis: re-ranking breaks more than it rescues
 BGE-base vs E5 on all 648 FiQA queries: **rescued 140 · broke 267 · unchanged 241.** Mean Δ = **−0.085**; broken queries lose −0.328 on average, rescued gain +0.231 — it breaks nearly 2× as many and the breaks are bigger. Worst case (`qid 4827`, *"Are all financial advisors compensated in the same way?"*): E5 ranked the gold passage **#1 (nDCG 1.000)**, BGE pushed it out of the top-10 entirely (**0.000**). Concrete proof of the equaliser effect — a confident, correct bi-encoder rank, demoted by a re-ranker reasoning past the right answer on surface features.
@@ -108,8 +108,8 @@ BGE-base vs E5 on all 648 FiQA queries: **rescued 140 · broke 267 · unchanged 
 | fiqa | 0.3987 | 0.4037 (MiniLM-L6 @depth-10) | +0.005 | re-rank top-**10** only, or skip |
 
 ## Key Findings
-1. **The cross-encoder — RAG's most-recommended quality lever — *reduced* nDCG@10 on all 3 BEIR corpora when re-ranking a strong dense retriever.** Mean −0.013 to −0.069. The advice assumes a weak (BM25) first stage.
-2. **Bigger re-ranker = worse.** 278M BGE-base was the worst of four (mean −0.069); 33M MiniLM-L12 the least-bad. Same pattern in the LLM family — **Opus < Haiku**, and Opus < no-rerank.
+1. **The cross-encoder — RAG's most-recommended quality lever — *reduced* nDCG@10 across all 3 BEIR corpora when re-ranking a strong dense retriever** (per-model mean −0.013 to −0.069; the only non-negative cell was a +0.0007 tie). The advice assumes a weak (BM25) first stage.
+2. **Quality is not monotonic in size — but the biggest model was worst.** Within the ms-marco family 4M→22M→33M actually *improved* (TinyBERT worst, MiniLM-L12 least-bad), then 278M BGE-base collapsed to worst overall (mean −0.069). The LLM family shows the same non-monotonicity — **Opus < Haiku**, and Opus < no-rerank.
 3. **Deeper re-ranking is monotonically worse** (FiQA 0.404 @10 → 0.379 @200). Re-rank shallow or not at all; "retrieve 100 → rerank" is backwards here.
 4. **Mechanism: re-rankers are equalisers, not amplifiers.** They lift BM25 +0.10 and drag E5 −0.01 onto their own ~0.35 band. They add value only when the first stage is below that band.
 5. **GPT-5.x is the one re-ranker that beats E5** on the winnable subset (0.720 vs 0.651) — but at $50/1k and 15 s/query, where a 22M cross-encoder gets 0.681 at $0.001/1k and 49 ms.
@@ -126,6 +126,12 @@ BGE-base vs E5 on all 648 FiQA queries: **rescued 140 · broke 267 · unchanged 
 - Re-ranking is **net-negative on a strong first stage**: 267/648 FiQA queries degraded vs 140 improved (BGE).
 - Failure mode: confident correct bi-encoder ranks (gold @#1) demoted by surface-feature over-scoring → catastrophic single-query drops (1.000 → 0.000).
 - The damage grows with re-rank depth and with model size — both add hard-negative exposure / over-reasoning.
+
+## Caveats / Threats to Validity
+- **Winnable subset.** Exp 4.5 (n=30) is stratified to FiQA queries with ≥1 retrievable gold in the E5 top-10 — the subset where re-ranking *can* help. It is not the unconditional result; the full-corpus verdict is Exp 4.2 (re-ranking the whole corpus hurts).
+- **Evidence-surface asymmetry.** The LLM re-rankers saw ≤340 chars/passage in the prompt; the cross-encoders saw up to a 256-token window. The LLMs therefore won Exp 4.5 on *less* text — so their quality edge is, if anything, understated. A larger-window LLM sweep is future work.
+- **Parse integrity verified.** `parse_perm` back-fills missing ranks, which could mask malformed LLM output; the added `strict_ok` column confirms **100%** of Claude/GPT responses were exact permutations of {1…10}, so the comparison is clean (not an artifact of fallback ordering).
+- **Out-of-domain hypothesis is inferred, not proven.** The mechanism (MS-MARCO-trained re-rankers underperform a domain-strong bi-encoder) is consistent with all results but untested directly — a FiQA-fine-tuned cross-encoder would confirm it (flagged for a later phase).
 
 ## Next Steps (Phase 5 — Query techniques)
 - The real lever isn't re-scoring — it's **better candidates**. Phase 5 tests HyDE, multi-query, query decomposition, step-back prompting: do they raise first-stage Recall@K (the thing that *did* cap everything here)?
