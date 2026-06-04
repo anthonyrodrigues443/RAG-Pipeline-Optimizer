@@ -128,6 +128,32 @@ vs whole-document?
 </tr>
 </table>
 
+### Phase 4: Re-ranking — the #1 RAG quality lever made retrieval *worse* — 2026-06-04
+
+<table>
+<tr>
+<td valign="top" width="38%">
+
+**What was tested:** A cross-encoder re-ranker zoo (TinyBERT-L2 4M → MiniLM-L6/L12 → BGE-base 278M) plus an LLM listwise re-ranker (GPT-5.x / Claude Opus & Haiku), re-scoring E5's top-100 across SciFact/NFCorpus/FiQA. Hypothesis: bigger re-ranker → higher nDCG@10. **Result: every re-ranker on every corpus underperformed the E5 baseline** (mean −0.013 to −0.069), and the 278M BGE was the *worst* on 2 of 3.<br><br>
+**What worked best:** Not re-ranking at all. The only config that beat E5 was MiniLM-L6 at **depth-10** on FiQA (0.4037 vs 0.3987, +0.005) — re-rank shallow or skip.
+
+</td>
+<td align="center" width="24%">
+
+<img src="results/phase4_reranker_zoo.png" width="220">
+
+</td>
+<td valign="top" width="38%">
+
+**Key Insight:** Re-rankers are *equalisers, not amplifiers* — Exp 4.4 shows the same MiniLM-L6 lifts BM25 **+0.10** and drags E5 **−0.01** onto its own ~0.35 band. "Re-rankers always help" is an artifact of benchmarking them on a weak BM25 first stage; re-rank a retriever that already clears the re-ranker's ceiling and you buy latency to *lose* accuracy.<br><br>
+**Surprise:** Bigger = worse, in both families — 278M BGE was the worst cross-encoder, and **Claude Opus re-ranking (0.644) lost to doing nothing (0.651)** while smaller Haiku helped. Deeper is also monotonically worse (FiQA 0.404 @10 → 0.379 @200). GPT-5.x is the *one* re-ranker that beats E5 (0.720 vs 0.651) — at $50/1k and 15 s/query, where a 22M cross-encoder gets 0.681 at $0.001/1k and 49 ms.<br><br>
+**Research:** Nogueira & Cho, 2019 (BERT re-ranking) — the cross-encoder paradigm we stress-tested. Sun et al., 2023 (RankGPT) — listwise LLM re-ranking, the protocol for the frontier head-to-head. BEIR (Thakur, 2021) already hinted MS-MARCO cross-encoders transfer unevenly out-of-domain — the thread this phase pulled.<br><br>
+**Best Model So Far:** E5-base-v2 (whole-doc, **no re-ranker**) — SciFact nDCG@10 **0.7274**, NFCorpus **0.3532**, FiQA-2018 **0.3987**. Re-ranking ruled out as a default lever; revisited only on a weak (BM25) first-stage path.
+
+</td>
+</tr>
+</table>
+
 ---
 
 ## Roadmap
@@ -136,7 +162,7 @@ vs whole-document?
 | 1 | Chunking — fixed/recursive/semantic/sentence/doc; build + validate eval harness | ✅ |
 | 2 | Embeddings head-to-head (MiniLM vs BGE vs E5 vs GTE vs long-context) + hybrid BM25+dense | ✅ |
 | 3 | Retrieval — dense vs sparse vs hybrid fusion; index structures | ✅ |
-| 4 | Re-ranking — cross-encoder / ColBERT; tuning + error analysis | ⏳ |
+| 4 | Re-ranking — cross-encoder / ColBERT; tuning + error analysis | ✅ |
 | 5 | Query techniques (HyDE, multi-query, step-back) + **LLM head-to-head** | ⏳ |
 | 6 | Generation faithfulness (RAGAS) + production pipeline | ⏳ |
 | 7 | End-to-end optimal pipeline + Streamlit UI + tests | ⏳ |
