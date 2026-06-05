@@ -154,6 +154,32 @@ vs whole-document?
 </tr>
 </table>
 
+### Phase 5: Query Transformation — the only safe LLM trick is HyDE×N — 2026-06-05
+
+<table>
+<tr>
+<td valign="top" width="38%">
+
+**What was tested:** Does expensive LLM query expansion (HyDE, multi-query, step-back) beat a free, no-LLM embedding-space PRF on a *strong* E5 retriever? Five transforms scored on a hard-query stratified sample across SciFact/NFCorpus/FiQA, plus a full-set PRF sweep and a Haiku-vs-Opus HyDE generator ablation. Headline: **HyDE×N is the only transform positive on all three corpora** (+0.116 / +0.031 / +0.040 ΔnDCG@10).<br><br>
+**What worked best:** HyDE×N (mean of 2 hypothetical passages + the original query) — folding the real query back in converts single-HyDE's volatility into a consistent win, turning FiQA's −0.075 loss into a +0.040 gain.
+
+</td>
+<td align="center" width="24%">
+
+<img src="results/phase5_query_techniques.png" width="220">
+
+</td>
+<td valign="top" width="38%">
+
+**Key Insight:** Domain decides HyDE's sign — +0.123 on scientific abstracts (corpus is literally written in the form HyDE hallucinates), −0.075 on messy financial Q&A. The corpus writing style, not the LLM, determines whether a hallucinated ideal answer helps or misleads.<br><br>
+**Surprise:** A bigger generator narrows but does **not** flip a bad technique — Opus-HyDE (−0.039) still loses to the raw query on FiQA, same as Haiku-HyDE (−0.075). Step-back prompting is actively harmful for dense retrieval (−0.03 to −0.09): a reasoning-QA trick that doesn't transfer. Echo of Phase 4's "bigger re-ranker was worse."<br><br>
+**Research:** Gao et al., 2022 (HyDE) — gains largest on *weak* encoders, a warning flag for strong E5, so we added a free PRF bar any LLM trick must clear. Zheng et al., 2023 (step-back) — built for reasoning QA, tested whether it transfers (it doesn't). Rocchio, 1971 (PRF) — run free in embedding space on cached vectors.<br><br>
+**Best Model So Far:** E5-base-v2 (whole-doc, no re-ranker) + **HyDE×N** where domain suits — SciFact nDCG@10 **0.7274**, NFCorpus **0.3532**, FiQA-2018 **0.3987**; HyDE×N adds a robust query-side lift, free PRF buys Recall@100 on all three.
+
+</td>
+</tr>
+</table>
+
 ---
 
 ## Roadmap
@@ -163,7 +189,7 @@ vs whole-document?
 | 2 | Embeddings head-to-head (MiniLM vs BGE vs E5 vs GTE vs long-context) + hybrid BM25+dense | ✅ |
 | 3 | Retrieval — dense vs sparse vs hybrid fusion; index structures | ✅ |
 | 4 | Re-ranking — cross-encoder / ColBERT; tuning + error analysis | ✅ |
-| 5 | Query techniques (HyDE, multi-query, step-back) + **LLM head-to-head** | ⏳ |
+| 5 | Query techniques (HyDE, multi-query, step-back) + **LLM head-to-head** | ✅ |
 | 6 | Generation faithfulness (RAGAS) + production pipeline | ⏳ |
 | 7 | End-to-end optimal pipeline + Streamlit UI + tests | ⏳ |
 
