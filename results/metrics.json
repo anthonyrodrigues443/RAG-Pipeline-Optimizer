@@ -948,5 +948,367 @@
       "unchanged": 241,
       "mean_delta": -0.08527388038278921
     }
+  },
+  "phase5": {
+    "phase": 5,
+    "date": "2026-06-05",
+    "task": "query transformation techniques",
+    "generator": "claude-haiku",
+    "n_sample": {
+      "scifact": 40,
+      "nfcorpus": 40,
+      "fiqa": 40
+    },
+    "primary_metric": "ndcg@10",
+    "naive_full": {
+      "scifact": 0.7274452929978544,
+      "nfcorpus": 0.35294303922739767,
+      "fiqa": 0.3986663557596119
+    },
+    "prf_best": {
+      "scifact": {
+        "k_fb": 3,
+        "beta": 0.3,
+        "ndcg10": 0.7267912119959401,
+        "d_ndcg": -0.0006540810019143306,
+        "r100": 0.9633333333333334
+      },
+      "nfcorpus": {
+        "k_fb": 3,
+        "beta": 0.5,
+        "ndcg10": 0.3662650453144273,
+        "d_ndcg": 0.013322006087029603,
+        "r100": 0.3378959834166309
+      },
+      "fiqa": {
+        "k_fb": 3,
+        "beta": 0.3,
+        "ndcg10": 0.40318273894851325,
+        "d_ndcg": 0.004516383188901352,
+        "r100": 0.739926834139797
+      }
+    },
+    "techniques": [
+      {
+        "dataset": "scifact",
+        "technique": "naive",
+        "ndcg10": 0.42789681039486605,
+        "r10": 0.6525000000000001,
+        "r100": 0.85,
+        "mrr10": 0.3608928571428572,
+        "d_ndcg": 0.0,
+        "oracle100": 0.85
+      },
+      {
+        "dataset": "scifact",
+        "technique": "prf",
+        "ndcg10": 0.42350091667845025,
+        "r10": 0.6275000000000001,
+        "r100": 0.875,
+        "mrr10": 0.3594047619047619,
+        "d_ndcg": -0.0043958937164158,
+        "oracle100": 0.85
+      },
+      {
+        "dataset": "scifact",
+        "technique": "hyde",
+        "ndcg10": 0.5505913383683743,
+        "r10": 0.73,
+        "r100": 0.95,
+        "mrr10": 0.5088095238095238,
+        "d_ndcg": 0.12269452797350822,
+        "oracle100": 0.85
+      },
+      {
+        "dataset": "scifact",
+        "technique": "hyde_passage",
+        "ndcg10": 0.5211478848875931,
+        "r10": 0.7474999999999999,
+        "r100": 0.975,
+        "mrr10": 0.46158730158730155,
+        "d_ndcg": 0.09325107449272707,
+        "oracle100": 0.85
+      },
+      {
+        "dataset": "scifact",
+        "technique": "hydeN",
+        "ndcg10": 0.5435716578932637,
+        "r10": 0.745,
+        "r100": 0.9,
+        "mrr10": 0.4906547619047618,
+        "d_ndcg": 0.11567484749839763,
+        "oracle100": 0.85
+      },
+      {
+        "dataset": "scifact",
+        "technique": "multiquery",
+        "ndcg10": 0.44557497588489214,
+        "r10": 0.6525000000000001,
+        "r100": 0.85,
+        "mrr10": 0.38752976190476185,
+        "d_ndcg": 0.0176781654900261,
+        "oracle100": 0.85
+      },
+      {
+        "dataset": "scifact",
+        "technique": "stepback",
+        "ndcg10": 0.395807944071478,
+        "r10": 0.5825,
+        "r100": 0.925,
+        "mrr10": 0.34214285714285714,
+        "d_ndcg": -0.03208886632338803,
+        "oracle100": 0.85
+      },
+      {
+        "dataset": "nfcorpus",
+        "technique": "naive",
+        "ndcg10": 0.36236282307402107,
+        "r10": 0.2058066709230406,
+        "r100": 0.34967921838485577,
+        "mrr10": 0.5098214285714285,
+        "d_ndcg": 0.0,
+        "oracle100": 0.6169203656427673
+      },
+      {
+        "dataset": "nfcorpus",
+        "technique": "prf",
+        "ndcg10": 0.3651065381516322,
+        "r10": 0.2035246431316562,
+        "r100": 0.35526559992386914,
+        "mrr10": 0.5002380952380953,
+        "d_ndcg": 0.0027437150776111197,
+        "oracle100": 0.6169203656427673
+      },
+      {
+        "dataset": "nfcorpus",
+        "technique": "hyde",
+        "ndcg10": 0.3597618289741827,
+        "r10": 0.20584220488974,
+        "r100": 0.43136023282453595,
+        "mrr10": 0.5652777777777779,
+        "d_ndcg": -0.002600994099838383,
+        "oracle100": 0.6169203656427673
+      },
+      {
+        "dataset": "nfcorpus",
+        "technique": "hyde_passage",
+        "ndcg10": 0.38266226601688746,
+        "r10": 0.2191755140569494,
+        "r100": 0.42759051345622223,
+        "mrr10": 0.5877380952380953,
+        "d_ndcg": 0.020299442942866397,
+        "oracle100": 0.6169203656427673
+      },
+      {
+        "dataset": "nfcorpus",
+        "technique": "hydeN",
+        "ndcg10": 0.392925466107677,
+        "r10": 0.22126631056018314,
+        "r100": 0.4344275577724034,
+        "mrr10": 0.5681547619047619,
+        "d_ndcg": 0.030562643033655912,
+        "oracle100": 0.6169203656427673
+      },
+      {
+        "dataset": "nfcorpus",
+        "technique": "multiquery",
+        "ndcg10": 0.35639254610505106,
+        "r10": 0.18749764837502933,
+        "r100": 0.3915196614400024,
+        "mrr10": 0.5177083333333334,
+        "d_ndcg": -0.005970276968970012,
+        "oracle100": 0.6169203656427673
+      },
+      {
+        "dataset": "nfcorpus",
+        "technique": "stepback",
+        "ndcg10": 0.2736516411185362,
+        "r10": 0.15642994767411592,
+        "r100": 0.4150237254004018,
+        "mrr10": 0.4760416666666666,
+        "d_ndcg": -0.08871118195548489,
+        "oracle100": 0.6169203656427673
+      },
+      {
+        "dataset": "fiqa",
+        "technique": "naive",
+        "ndcg10": 0.3376646844412469,
+        "r10": 0.41716269841269843,
+        "r100": 0.7113293650793651,
+        "mrr10": 0.4209623015873015,
+        "d_ndcg": 0.0,
+        "oracle100": 0.7521878383877938
+      },
+      {
+        "dataset": "fiqa",
+        "technique": "prf",
+        "ndcg10": 0.3385456121306583,
+        "r10": 0.41646825396825393,
+        "r100": 0.7301388888888889,
+        "mrr10": 0.40864087301587304,
+        "d_ndcg": 0.0008809276894113927,
+        "oracle100": 0.7521878383877938
+      },
+      {
+        "dataset": "fiqa",
+        "technique": "hyde",
+        "ndcg10": 0.26316482353416304,
+        "r10": 0.36860119047619044,
+        "r100": 0.6785119047619047,
+        "mrr10": 0.3096130952380952,
+        "d_ndcg": -0.07449986090708388,
+        "oracle100": 0.7521878383877938
+      },
+      {
+        "dataset": "fiqa",
+        "technique": "hyde_passage",
+        "ndcg10": 0.255670406513021,
+        "r10": 0.31741071428571427,
+        "r100": 0.6488888888888888,
+        "mrr10": 0.2919047619047619,
+        "d_ndcg": -0.08199427792822594,
+        "oracle100": 0.7521878383877938
+      },
+      {
+        "dataset": "fiqa",
+        "technique": "hydeN",
+        "ndcg10": 0.3779301037139827,
+        "r10": 0.4583829365079365,
+        "r100": 0.7618452380952382,
+        "mrr10": 0.4469444444444445,
+        "d_ndcg": 0.0402654192727358,
+        "oracle100": 0.7521878383877938
+      },
+      {
+        "dataset": "fiqa",
+        "technique": "multiquery",
+        "ndcg10": 0.3724395132651136,
+        "r10": 0.4400793650793651,
+        "r100": 0.7182738095238095,
+        "mrr10": 0.45979166666666665,
+        "d_ndcg": 0.03477482882386668,
+        "oracle100": 0.7521878383877938
+      },
+      {
+        "dataset": "fiqa",
+        "technique": "stepback",
+        "ndcg10": 0.29236773088528595,
+        "r10": 0.3785218253968254,
+        "r100": 0.6820238095238095,
+        "mrr10": 0.36800595238095235,
+        "d_ndcg": -0.04529695355596097,
+        "oracle100": 0.7521878383877938
+      }
+    ],
+    "ablation": [
+      {
+        "dataset": "scifact",
+        "technique": "prf",
+        "d_ndcg": -0.0044,
+        "verdict": "hurts"
+      },
+      {
+        "dataset": "scifact",
+        "technique": "hyde",
+        "d_ndcg": 0.1227,
+        "verdict": "helps"
+      },
+      {
+        "dataset": "scifact",
+        "technique": "hyde_passage",
+        "d_ndcg": 0.0933,
+        "verdict": "helps"
+      },
+      {
+        "dataset": "scifact",
+        "technique": "hydeN",
+        "d_ndcg": 0.1157,
+        "verdict": "helps"
+      },
+      {
+        "dataset": "scifact",
+        "technique": "multiquery",
+        "d_ndcg": 0.0177,
+        "verdict": "helps"
+      },
+      {
+        "dataset": "scifact",
+        "technique": "stepback",
+        "d_ndcg": -0.0321,
+        "verdict": "hurts"
+      },
+      {
+        "dataset": "nfcorpus",
+        "technique": "prf",
+        "d_ndcg": 0.0027,
+        "verdict": "helps"
+      },
+      {
+        "dataset": "nfcorpus",
+        "technique": "hyde",
+        "d_ndcg": -0.0026,
+        "verdict": "hurts"
+      },
+      {
+        "dataset": "nfcorpus",
+        "technique": "hyde_passage",
+        "d_ndcg": 0.0203,
+        "verdict": "helps"
+      },
+      {
+        "dataset": "nfcorpus",
+        "technique": "hydeN",
+        "d_ndcg": 0.0306,
+        "verdict": "helps"
+      },
+      {
+        "dataset": "nfcorpus",
+        "technique": "multiquery",
+        "d_ndcg": -0.006,
+        "verdict": "hurts"
+      },
+      {
+        "dataset": "nfcorpus",
+        "technique": "stepback",
+        "d_ndcg": -0.0887,
+        "verdict": "hurts"
+      },
+      {
+        "dataset": "fiqa",
+        "technique": "prf",
+        "d_ndcg": 0.0009,
+        "verdict": "neutral"
+      },
+      {
+        "dataset": "fiqa",
+        "technique": "hyde",
+        "d_ndcg": -0.0745,
+        "verdict": "hurts"
+      },
+      {
+        "dataset": "fiqa",
+        "technique": "hyde_passage",
+        "d_ndcg": -0.082,
+        "verdict": "hurts"
+      },
+      {
+        "dataset": "fiqa",
+        "technique": "hydeN",
+        "d_ndcg": 0.0403,
+        "verdict": "helps"
+      },
+      {
+        "dataset": "fiqa",
+        "technique": "multiquery",
+        "d_ndcg": 0.0348,
+        "verdict": "helps"
+      },
+      {
+        "dataset": "fiqa",
+        "technique": "stepback",
+        "d_ndcg": -0.0453,
+        "verdict": "hurts"
+      }
+    ]
   }
 }
