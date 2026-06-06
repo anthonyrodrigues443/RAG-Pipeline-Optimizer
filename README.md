@@ -182,6 +182,35 @@ vs whole-document?
 
 ---
 
+### Phase 6: Generation & Faithfulness — does any of the retrieval work change the answer? — 2026-06-06
+
+<table>
+<tr>
+<td valign="top" width="38%">
+
+**What was tested:** Five phases moved one retrieval number (nDCG@10). Phase 6 closes the loop: build a real RAG generator (Haiku over FiQA), sweep context quality **oracle → strong (E5) → HyDE×N → adversarial → none**, and score RAGAS **faithfulness / answer-relevancy / correctness-vs-gold / citation-grounding** with a *fixed* Haiku judge. Plus the Phase-4/5 carry-overs: the cross-encoder **backward link** and the per-query **router** ceiling.<br><br>
+**What worked best:** **HyDE×N top-5 ties the gold oracle on answer correctness (0.604)** at a quarter of the context precision — the LLM only needs one relevant passage in the window.
+
+</td>
+<td align="center" width="24%">
+
+<img src="results/phase6_generation_headline.png" width="240">
+
+</td>
+<td valign="top" width="38%">
+
+**Key Insight (close the loop):** retrieval quality *past "good enough"* barely moves the answer — going from strong E5 to a perfect oracle (context-precision 0.234→1.0) lifts correctness just 6 points (0.542→0.604). The five-phase nDCG@10 chase has steeply diminishing **downstream** returns.<br><br>
+**Surprise (context poisoning):** feeding plausible-but-wrong passages **cut correctness by 54% (0.54→0.25), *below* closed-book**, while the model stayed **0.83 faithful** to the garbage — wrong retrieval doesn't just fail to help, it manufactures confident, well-grounded hallucinations. And **no retrieval beats bad retrieval** (closed-book 0.40 > adversarial 0.25).<br><br>
+**Backward link (closes Phase 4/5):** re-ranking HyDE×N's higher-recall candidates flips the cross-encoder from harmful to *helpful-vs-naive* on 2/3 corpora — but **raw HyDE×N still beats CE-on-HyDE×N everywhere**: better retrieval makes the re-ranker *redundant*, not rescued.<br><br>
+**Frontier (same context, fixed judge):** on the hard tail, Opus & Codex(GPT) convert **+50% more answers correct** (0.375 vs 0.250) at **15–83× the cost** — cheap model + good retrieval suffices for the majority; pay for the frontier generator only on the hard tail.<br><br>
+**Research:** Es et al., 2023 (RAGAS) re-implemented with a Claude judge + E5; HyDE candidates reused from Phase 5. Self-reviewed adversarially — all numeric claims re-derived from the CSVs; confounds documented in the report.
+
+</td>
+</tr>
+</table>
+
+---
+
 ## Roadmap
 | Phase | Focus | Status |
 |------:|-------|--------|
@@ -190,7 +219,7 @@ vs whole-document?
 | 3 | Retrieval — dense vs sparse vs hybrid fusion; index structures | ✅ |
 | 4 | Re-ranking — cross-encoder / ColBERT; tuning + error analysis | ✅ |
 | 5 | Query techniques (HyDE, multi-query, step-back) + **LLM head-to-head** | ✅ |
-| 6 | Generation faithfulness (RAGAS) + production pipeline | ⏳ |
+| 6 | Generation faithfulness (RAGAS) + backward-link rerank + **frontier generators** | ✅ |
 | 7 | End-to-end optimal pipeline + Streamlit UI + tests | ⏳ |
 
 ## Datasets

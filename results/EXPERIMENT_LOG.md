@@ -69,5 +69,36 @@ Primary metric **nDCG@10** throughout (BEIR standard). Retriever backbone after 
 
 ---
 
-### Running production recommendation (through Phase 5)
-**E5-base-v2, whole-doc, exact (Flat) search below ~40k vectors / HNSW ef=128 above; skip the cross-encoder re-ranker on a strong dense retriever; apply HyDE×N when an LLM-budget exists (especially on abstract-like corpora), else free PRF for a recall bump.** Next: RAGAS faithfulness + test whether HyDE×N's recall gain finally makes a re-ranker pay (Phase 6).
+## Phase 6 — Generation faithfulness (RAGAS) + the backward link + frontier generators
+*Question: does any of the retrieval tuning change the generated answer, and does HyDE×N's recall finally make a re-ranker pay?*
+*(Generation: Haiku over FiQA, n=24, 5 context conditions, fixed Haiku judge. Exp A/E on n=40 × 3 corpora.)*
+
+**Exp B/C/D — FiQA generation by context condition (mean):**
+| Context | Correctness | Faithfulness | Citation grounding | Refused |
+|---------|------------:|-------------:|-------------------:|--------:|
+| oracle (gold) | 0.604 | 0.944 | 1.00 | 0.13 |
+| **HyDE×N top-5** | **0.604** | 0.993 | 1.00 | 0.21 |
+| strong (E5 top-5) | 0.542 | 0.967 | 1.00 | 0.21 |
+| closed-book | 0.396 | 0.000 | — | 0.04 |
+| adversarial (E5 r40–60) | **0.250** | 0.831 | 1.00 | 0.58 |
+
+**Exp E — backward link, cross-encoder over naive vs HyDE×N candidates (nDCG@10):**
+| Corpus | E5 naive | HyDE×N raw | CE(naive) | CE(HyDE×N) |
+|--------|---------:|----------:|----------:|-----------:|
+| SciFact | 0.428 | **0.544** | 0.453 | 0.471 |
+| NFCorpus | 0.362 | **0.393** | 0.372 | 0.384 |
+| FiQA | 0.338 | **0.378** | 0.316 | 0.324 |
+
+**Exp F — frontier generators, same E5 context, fixed Haiku judge (n=12 hard tail, mean naive nDCG@10=0.07):**
+| Generator | Correctness | Faithfulness | Cost/1k |
+|-----------|------------:|-------------:|--------:|
+| Haiku | 0.250 | 0.917 | **$0.60** |
+| Opus | 0.375 | 0.988 | $9.00 |
+| Codex (GPT) | 0.375 | 0.967 | $50.00 |
+
+**Findings:** (1) **Retrieval quality past "good enough" barely moves the answer** — strong→oracle raises context precision 0.234→1.0 for +6 pts correctness; HyDE×N ties oracle (within n=24 noise). (2) **Context poisoning:** wrong retrieval cuts correctness 54% (below closed-book) while the model stays 0.83 faithful to the garbage. (3) **No retrieval beats bad retrieval** (closed-book 0.40 > adversarial 0.25). (4) **Backward link half-works:** CE on HyDE×N candidates flips positive-vs-naive on 2/3 corpora but raw HyDE×N still wins everywhere → re-ranker redundant, not rescued. (5) **Frontier generators win the hard tail only** (+50% correctness at 15–83× cost); per-query router headroom ≤0.046 → not worth building.
+
+---
+
+### Running production recommendation (through Phase 6)
+**E5-base-v2, whole-doc, exact (Flat) search below ~40k vectors / HNSW ef=128 above; skip the cross-encoder re-ranker entirely (redundant even on HyDE×N's better candidates); apply HyDE×N when an LLM-budget exists (especially on abstract-like corpora), else free PRF for a recall bump; generate with a cheap model (Haiku) for the easy/mid majority and reserve a frontier generator for the hard tail.** Retrieval gains past "good enough" barely move the answer, but a *wrong* retrieval actively poisons it — so spend the budget on retrieval *reliability*, not extra ranking precision. Next: Phase 7 — optimal end-to-end pipeline + Streamlit UI + tests.
