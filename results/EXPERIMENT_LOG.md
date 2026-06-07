@@ -100,5 +100,31 @@ Primary metric **nDCG@10** throughout (BEIR standard). Retriever backbone after 
 
 ---
 
-### Running production recommendation (through Phase 6)
-**E5-base-v2, whole-doc, exact (Flat) search below ~40k vectors / HNSW ef=128 above; skip the cross-encoder re-ranker entirely (redundant even on HyDE×N's better candidates); apply HyDE×N when an LLM-budget exists (especially on abstract-like corpora), else free PRF for a recall bump; generate with a cheap model (Haiku) for the easy/mid majority and reserve a frontier generator for the hard tail.** Retrieval gains past "good enough" barely move the answer, but a *wrong* retrieval actively poisons it — so spend the budget on retrieval *reliability*, not extra ranking precision. Next: Phase 7 — optimal end-to-end pipeline + Streamlit UI + tests.
+## Phase 7 — End-to-end optimal pipeline + production + UI + tests
+*Question: does the optimal pipeline beat naive RAG end to end (retrieval AND answer), and can it be productionised?*
+*(Retrieval: naive E5 vs HyDE×N recomputed live from cached E5 vectors, n=40×3 corpora. Generation: Phase-6 FiQA judge cache replayed deterministically, n=24. One live smoke run.)*
+
+**Exp 7.1 — retrieval, naive vs optimal (nDCG@10):**
+| Corpus | Naive E5 | Optimal (HyDE×N) | Δ |
+|--------|---------:|-----------------:|--:|
+| SciFact | 0.4279 | **0.5436** | +0.116 |
+| NFCorpus | 0.3624 | **0.3929** | +0.031 |
+| FiQA | 0.3377 | **0.3779** | +0.040 |
+
+**Exp 7.2 — FiQA generation by context condition (mean, n=24):**
+| Context | Correctness | Faithfulness | Citation |
+|---------|------------:|-------------:|---------:|
+| Oracle (gold) | 0.604 | 0.94 | 1.00 |
+| **Optimal (HyDE×N)** | **0.604** | 0.99 | 1.00 |
+| Naive (E5) | 0.542 | 0.97 | 1.00 |
+| Closed-book | 0.396 | 0.00 | — |
+| Adversarial | 0.250 | 0.83 | 1.00 |
+
+**Exp 7.3 — live end-to-end smoke:** free-text FiQA query → 4 HyDE hypotheticals → 5 retrieved passages → cited Haiku answer at **citation grounding 1.00**, 36.8 s (CLI overhead).
+
+**Findings:** (1) **The optimal pipeline ties the gold oracle on answer correctness (0.604)** and beats naive E5 (+0.063) — a cheap generator on a reliable retriever ≈ perfect retrieval. (2) Retrieval lift (+0.03-0.12 nDCG@10) converts to only +0.06 answer correctness — diminishing downstream returns. (3) Context poisoning (adversarial 0.250 < closed-book 0.396 at 0.83 faithful) is the deployment risk → spend on reliability. Shipped as `src/pipeline.py` + 45 offline tests + Streamlit UI.
+
+---
+
+### FINAL production recommendation (all 7 phases)
+**E5-base-v2, whole-doc, exact (Flat) search below ~40k vectors / HNSW ef=128 above; skip the cross-encoder re-ranker entirely (redundant even on HyDE×N's better candidates); apply HyDE×N when an LLM-budget exists (especially on abstract-like corpora), else free PRF for a recall bump; generate with a cheap model (Haiku) + citation enforcement for the easy/mid majority and reserve a frontier generator for the hard tail.** End-to-end (Phase 7), this pipeline ties the unreachable gold-oracle on answer correctness (0.604) while beating naive RAG (0.542). Retrieval gains past "good enough" barely move the answer, but a *wrong* retrieval actively poisons it (correctness below closed-book at 0.83 faithfulness) — so spend the budget on retrieval **reliability**, not extra ranking precision. Production code: `src/pipeline.py` · `src/predict.py` · `src/evaluate.py`; demo: `app.py`. **Project complete (7/7).**

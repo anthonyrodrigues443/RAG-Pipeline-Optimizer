@@ -1463,5 +1463,111 @@
     "cost_per_1k_usd": 50.0
    }
   }
+ },
+ "phase7": {
+  "phase": 7,
+  "date": "2026-06-07",
+  "task": "end-to-end optimal pipeline vs naive RAG + production + UI + tests",
+  "primary_metric": "ndcg@10 (retrieval); answer-correctness-vs-gold (generation)",
+  "pipeline": "E5-base-v2 whole-doc + exact NumPy top-k (Flat<40k / HNSW above) + HyDE\u00d7N (no re-ranker) + Haiku generator w/ citation enforcement",
+  "retrieval_naive_vs_hydeN": {
+   "scifact": {
+    "naive": {
+     "ndcg10": 0.4279,
+     "recall10": 0.6525,
+     "recall100": 0.85,
+     "mrr10": 0.3609
+    },
+    "hydeN": {
+     "ndcg10": 0.5436,
+     "recall10": 0.745,
+     "recall100": 0.9,
+     "mrr10": 0.4907
+    }
+   },
+   "nfcorpus": {
+    "naive": {
+     "ndcg10": 0.3624,
+     "recall10": 0.2058,
+     "recall100": 0.3497,
+     "mrr10": 0.5098
+    },
+    "hydeN": {
+     "ndcg10": 0.3929,
+     "recall10": 0.2213,
+     "recall100": 0.4344,
+     "mrr10": 0.5682
+    }
+   },
+   "fiqa": {
+    "naive": {
+     "ndcg10": 0.3377,
+     "recall10": 0.4172,
+     "recall100": 0.7113,
+     "mrr10": 0.421
+    },
+    "hydeN": {
+     "ndcg10": 0.3779,
+     "recall10": 0.4584,
+     "recall100": 0.7618,
+     "mrr10": 0.4469
+    }
+   }
+  },
+  "generation_fiqa_by_condition": {
+   "oracle": {
+    "label": "Oracle (gold ceiling)",
+    "n": 24,
+    "correctness": 0.6042,
+    "faithfulness": 0.9435,
+    "citation": 1.0,
+    "refused": 0.25
+   },
+   "hydeN": {
+    "label": "Optimal (HyDE\u00d7N top-5)",
+    "n": 24,
+    "correctness": 0.6042,
+    "faithfulness": 0.9932,
+    "citation": 1.0,
+    "refused": 0.1667
+   },
+   "strong": {
+    "label": "Naive (E5 top-5)",
+    "n": 24,
+    "correctness": 0.5417,
+    "faithfulness": 0.9667,
+    "citation": 1.0,
+    "refused": 0.25
+   },
+   "closed_book": {
+    "label": "Closed-book (no retrieval)",
+    "n": 24,
+    "correctness": 0.3958,
+    "faithfulness": 0.0,
+    "citation": null,
+    "refused": 0.0
+   },
+   "adversarial": {
+    "label": "Adversarial (poisoned)",
+    "n": 24,
+    "correctness": 0.25,
+    "faithfulness": 0.8308,
+    "citation": 1.0,
+    "refused": 0.7917
+   }
+  },
+  "headline": {
+   "retrieval": "HyDE\u00d7N beats naive E5 nDCG@10 on all 3 corpora (+0.116 scifact / +0.031 nfcorpus / +0.040 fiqa)",
+   "generation": "optimal HyDE\u00d7N ties the gold oracle on answer correctness (0.604) and beats naive E5 (0.542); a cheap Haiku generator + reliable retrieval matches the unreachable ceiling",
+   "poisoning": "adversarial (plausible-wrong) context cuts correctness to 0.250 \u2014 below closed-book 0.396 \u2014 while staying 0.831 faithful; spend the budget on retrieval RELIABILITY not ranking precision"
+  },
+  "live_smoke": {
+   "query": "How is freelance income taxed for a sole proprietor?",
+   "condition": "hydeN",
+   "hyde_passages": 4,
+   "citation_grounding": 1.0,
+   "latency_s": 36.84,
+   "note": "2 sequential Haiku CLI calls + E5 encode; latency is CLI overhead, expect 5-10x speedup via direct API"
+  }
  }
 }

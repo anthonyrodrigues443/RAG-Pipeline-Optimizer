@@ -12,3 +12,5 @@ tqdm>=4.66
 ipykernel>=6.29
 jupyter>=1.0
 pyyaml>=6.0
+streamlit>=1.40      # Phase 7 interactive UI (app.py)
+pytest>=8.0          # Phase 7 test suite (tests/)

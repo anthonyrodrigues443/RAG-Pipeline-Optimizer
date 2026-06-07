@@ -16,6 +16,9 @@ venv/
 # OS
 .DS_Store
 
+# Local dev tooling (preview launch config, scratch screenshots)
+.claude/
+
 # HF / caches
 .cache/
 *.lock

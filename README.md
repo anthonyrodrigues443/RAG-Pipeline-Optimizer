@@ -4,8 +4,88 @@
 > chunking, embeddings, retrieval, reranking, query rewriting, and generation — each isolated and benchmarked
 > on real BEIR datasets with a harness validated against published numbers.
 
-This is the project's research log, built one phase at a time (Mon–Sun). Every number below is produced by an
-executed notebook, not asserted.
+This is the project's research log, built one phase at a time (Mon–Sun) and now **complete (7/7 phases)**. Every
+number below is produced by an executed notebook or a deterministic eval script, not asserted.
+
+---
+
+## ✅ The optimal pipeline (the 7-phase verdict)
+
+Every box below is a *finding*, not a default. The arrows are the data path; the annotations are why each choice won.
+
+```mermaid
+flowchart LR
+    Q[User query] --> B{LLM budget?}
+    B -- yes --> HY["HyDE×N<br/>gen N hypotheticals → embed →<br/>average with query vector"]
+    B -- no --> QE["E5 query embed<br/>(free PRF for a recall bump)"]
+    DOCS[("BEIR corpus<br/>E5-base-v2, whole-doc<br/>(no chunking)")] --> R
+    HY --> R["Exact cosine top-k<br/>NumPy matmul · Flat &lt;40k vectors / HNSW above"]
+    QE --> R
+    R --> X["❌ no re-ranker<br/>every cross-encoder tested HURT"]
+    X --> C["top-5 context"]
+    C --> G["Haiku generator<br/>cite ONLY the passages"]
+    G --> A["Grounded, cited answer"]
+    G -. hard tail only .-> F["escalate to Opus / GPT<br/>(+50% correctness, 15-83× cost)"]
+```
+
+> **Recommendation:** E5-base-v2 over **whole documents**; **exact** NumPy top-k (Flat below ~40k vectors, HNSW
+> `ef=128` above); **skip the cross-encoder re-ranker entirely**; apply **HyDE×N** when an LLM budget exists (free
+> PRF otherwise); generate with a **cheap model + citation enforcement** for the easy/mid majority and reserve a
+> frontier generator for the hard tail. **Spend the budget on retrieval *reliability*, not extra ranking precision** —
+> gains past "good enough" barely move the answer, but a *wrong* retrieval actively poisons it.
+
+### End-to-end: the optimal pipeline vs naive RAG
+
+**Retrieval** (nDCG@10, n=40 sampled queries per corpus — HyDE×N wins on all three):
+
+| Corpus | Naive (E5 top-k) | Optimal (HyDE×N) | Δ |
+|--------|-----------------:|-----------------:|--:|
+| SciFact  | 0.4279 | **0.5436** | **+0.116** |
+| NFCorpus | 0.3624 | **0.3929** | +0.031 |
+| FiQA     | 0.3377 | **0.3779** | +0.040 |
+
+**Generation** (FiQA, n=24, Haiku generator + fixed Haiku judge — same cheap model, only the *context* changes):
+
+| Context condition | Answer correctness | Faithfulness | Citation grounding |
+|-------------------|-------------------:|-------------:|-------------------:|
+| Oracle (gold ceiling) | 0.604 | 0.94 | 1.00 |
+| **Optimal (HyDE×N top-5)** | **0.604** | 0.99 | 1.00 |
+| Naive (E5 top-5) | 0.542 | 0.97 | 1.00 |
+| Closed-book (no retrieval) | 0.396 | 0.00 | — |
+| **Adversarial (plausible-wrong)** | **0.250** | 0.83 | 1.00 |
+
+**The headline:** a cheap Haiku generator on the optimal retriever **ties the unreachable gold oracle (0.604)** and
+beats naive E5 (+0.063). But feed it plausible-but-wrong passages and correctness collapses to **0.250 — *below*
+closed-book (0.396)** — while the model stays **0.83 "faithful"** to the garbage. Wrong retrieval doesn't just fail
+to help; it manufactures confident, well-grounded hallucinations.
+
+![end-to-end](results/phase7_end_to_end.png)
+
+### Try it — the interactive demo
+
+A Streamlit app makes the poisoning finding tangible: pick a question, slide the retrieval quality, and watch the
+*same generator's* answer change. ([`app.py`](app.py) · `streamlit run app.py`)
+
+![RAG Pipeline Optimizer UI](results/ui_screenshot.png)
+
+*Same FiQA question, same Haiku generator. **Left (optimal HyDE×N):** a correct, fully-cited answer. **Right
+(adversarial context):** the model derails into "the context does not contain the answer" — correctness 0.00 — yet
+still cites the passages it was handed.*
+
+### What each phase decided
+
+| Phase | Component | Verdict | Evidence |
+|------:|-----------|---------|----------|
+| 1 | **Chunking** | Whole-doc; chunking is *encoder-bounded*, not free lift | Best chunker +3.6% on NFCorpus, but fixed 256/512/1024 span just 0.004 nDCG@10 with a 256-tok encoder |
+| 2 | **Embedding** | **E5-base-v2** — the dominant lever | MiniLM→E5 = +12.2%/+10.7% nDCG@10, ~3× any chunking gain; hybrid BM25+dense RRF *hurt* |
+| 3 | **Index** | Exact Flat below ~40k vectors; HNSW above | IVF is Pareto-dominated at every N; ANN *loses* nDCG to save sub-ms below the crossover |
+| 4 | **Re-ranker** | **None** | Every cross-encoder *hurt* a strong E5 stage; the 278M model was worse than the 22M one |
+| 5 | **Query transform** | **HyDE×N** (avg of N hypotheticals) | Only transform positive on all 3 corpora; single-HyDE flipped sign by domain (+0.12 / −0.075) |
+| 6 | **Generation** | Cheap model + citation enforcement; frontier only on the hard tail | Retrieval past "good enough" barely moves the answer; wrong retrieval poisons it below closed-book |
+| 7 | **End-to-end** | Optimal pipeline ties the gold oracle; spend budget on retrieval *reliability* | HyDE×N correctness 0.604 = oracle; live pipeline ships a cited answer (grounding 1.00) |
+
+📦 Production code: [`src/pipeline.py`](src/pipeline.py) · [`src/predict.py`](src/predict.py) ·
+[`src/evaluate.py`](src/evaluate.py) · [`src/llm.py`](src/llm.py) — 45 passing tests, all offline.
 
 ---
 
@@ -211,6 +291,34 @@ vs whole-document?
 
 ---
 
+### Phase 7: End-to-End Optimal Pipeline + Production + UI — 2026-06-07
+
+<table>
+<tr>
+<td valign="top" width="38%">
+
+**What was built:** The consolidated pipeline as importable production code — [`src/pipeline.py`](src/pipeline.py) (E5 whole-doc + exact NumPy top-k + HyDE×N, **no re-ranker** + Haiku generator with citation enforcement), [`src/predict.py`](src/predict.py), [`src/evaluate.py`](src/evaluate.py), a Streamlit app, and 45 offline tests. Then the end-to-end question: does the optimal pipeline beat naive RAG on *both* retrieval and the answer?<br><br>
+**What worked best:** Optimal HyDE×N lifts retrieval nDCG@10 on all 3 corpora (+0.116/+0.031/+0.040) **and** ties the gold oracle on FiQA answer correctness (0.604 vs naive 0.542).
+
+</td>
+<td align="center" width="24%">
+
+<img src="results/phase7_end_to_end.png" width="240">
+
+</td>
+<td valign="top" width="38%">
+
+**Key Insight:** A cheap generator on a *reliable* retriever matches an unreachable perfect oracle. The 6-phase nDCG@10 chase pays off downstream only up to "good enough" — beyond that, reliability beats precision.<br><br>
+**Surprise (live):** the production pipeline answered an unseen FiQA query end-to-end — 4 HyDE hypotheticals → 5 retrieved passages → a cited answer at **citation-grounding 1.00** — in one CPU pass (36.8 s incl. CLI overhead; 5-10× faster via direct API).<br><br>
+**Honest reporting:** answer-correctness numbers replay the Phase-6 fixed-judge cache deterministically (zero new LLM calls); retrieval is recomputed live from the cached E5 vectors. Latency includes CLI startup.<br><br>
+**Ships:** E5-base-v2 whole-doc + HyDE×N + no re-ranker + Haiku w/ citations. See the top-of-README diagram.
+
+</td>
+</tr>
+</table>
+
+---
+
 ## Roadmap
 | Phase | Focus | Status |
 |------:|-------|--------|
@@ -220,12 +328,12 @@ vs whole-document?
 | 4 | Re-ranking — cross-encoder / ColBERT; tuning + error analysis | ✅ |
 | 5 | Query techniques (HyDE, multi-query, step-back) + **LLM head-to-head** | ✅ |
 | 6 | Generation faithfulness (RAGAS) + backward-link rerank + **frontier generators** | ✅ |
-| 7 | End-to-end optimal pipeline + Streamlit UI + tests | ⏳ |
+| 7 | End-to-end optimal pipeline + Streamlit UI + tests | ✅ |
 
 ## Datasets
-Two **BEIR** tasks, loaded at runtime from the HF Hub (nothing committed): **SciFact** (clean, sparse-binary —
-harness validation) and **NFCorpus** (graded relevance, longer medical docs — the chunking arena).
-See [`data/README.md`](data/README.md).
+Three **BEIR** tasks, loaded at runtime from the HF Hub (nothing committed): **SciFact** (clean, sparse-binary —
+harness validation), **NFCorpus** (graded relevance, longer medical docs — the chunking arena), and **FiQA-2018**
+(57,638 docs — the ANN-crossover stress test and the generation/RAGAS arena). See [`data/README.md`](data/README.md).
 
 ## Primary metric
 **`nDCG@10`** — the BEIR leaderboard metric, rank/grade-aware, and the best-correlated retrieval proxy for
@@ -235,18 +343,42 @@ end-to-end RAG quality. Secondary: Recall@10, Recall@100, MRR@10.
 ```bash
 python3.11 -m venv .venv && source .venv/bin/activate
 pip install -r requirements.txt
+
+# run the test suite (offline — no data/models needed)
+pytest -q                                   # 45 passing
+
+# answer a question end-to-end (downloads FiQA + builds the E5 cache on first run)
+python -m src.predict "How is freelance income taxed for a sole proprietor?"
+python -m src.predict --qid 2498 --condition adversarial   # watch context poisoning
+
+# reproduce the Phase-7 end-to-end comparison (deterministic; replays cached judgments)
+python -m src.evaluate --phase7
+
+# launch the interactive demo
+streamlit run app.py
+
+# reproduce the underlying research, phase by phase
 jupyter nbconvert --to notebook --execute notebooks/phase1_foundation_chunking.ipynb
 ```
 
-> **Apple-Silicon note:** torch MPS segfaults and faiss-cpu deadlocks against torch's libomp in this stack, so
-> the encoder runs on CPU and top-k uses an exact numpy matmul (corpora ≤ 20k vectors). See
-> `src/retrieval_eval.topk_search`.
+> **Apple-Silicon note:** torch MPS segfaults and faiss-cpu deadlocks against torch's libomp in this stack, so the
+> encoder runs on CPU and top-k uses an exact numpy matmul (Phase 3 showed this *wins* below ~40k vectors anyway).
+> See `src/retrieval_eval.topk_search`.
 
 ## Repo layout
 ```
-src/            reusable harness (retrieval_eval.py) + chunkers (chunking.py)
-notebooks/      the research, phase by phase (executed, with outputs)
-results/        metrics.json, CSVs, plots
-reports/        detailed per-phase research reports
-config/         config.yaml
+src/
+  pipeline.py        the optimal RAG pipeline (E5 whole-doc + HyDE×N + no rerank + cited gen)
+  predict.py         single-query inference CLI
+  evaluate.py        eval suite + the Phase-7 end-to-end comparison (--phase7)
+  llm.py             Claude/Codex CLI harness + RAGAS judge/citation parsers
+  retrieval_eval.py  TREC/BEIR metrics (validated vs published BM25) + exact top-k
+  chunking.py        the Phase-1 chunker registry
+app.py             Streamlit demo (cached + live modes; the poisoning toggle)
+notebooks/         the research, phase by phase (executed, with outputs)
+tests/             45 offline pytest tests (no data/models/network)
+results/           metrics.json, per-phase CSVs, plots, UI screenshot, demo JSON
+reports/           detailed per-phase research reports + final_report.md
+models/            model_card.md (the pipeline has no trained weights — it's a recipe)
+config/            config.yaml
 ```

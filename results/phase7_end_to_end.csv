@@ -1,0 +1,6 @@
+condition,label,n,correctness,faithfulness,citation,refused
+oracle,Oracle (gold ceiling),24,0.6042,0.9435,1.0,0.25
+hydeN,Optimal (HyDE×N top-5),24,0.6042,0.9932,1.0,0.1667
+strong,Naive (E5 top-5),24,0.5417,0.9667,1.0,0.25
+closed_book,Closed-book (no retrieval),24,0.3958,0.0,,0.0
+adversarial,Adversarial (poisoned),24,0.25,0.8308,1.0,0.7917
