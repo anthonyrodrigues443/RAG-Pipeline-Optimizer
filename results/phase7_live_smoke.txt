@@ -1,0 +1,26 @@
+loading fiqa corpus + E5 cache (first run downloads BEIR)...
+Warning: You are sending unauthenticated requests to the HF Hub. Please set a HF_TOKEN to enable higher rate limits and faster downloads.
+Loading weights:   0%|          | 0/199 [00:00<?, ?it/s]Loading weights: 100%|██████████| 199/199 [00:00<00:00, 8248.02it/s]
+
+==============================================================================
+Q: How is freelance income taxed for a sole proprietor?
+condition=hydeN  |  model=haiku  |  latency=36.84s
+
+HyDE hypotheticals generated: 4
+  H1: **Income Reporting and Taxation**: A sole proprietor reports all freelance income on Schedule C (Profit or Loss from Bus
+  H2: **Self-Employment Tax**: Freelancers as sole proprietors must pay self-employment tax on their net earnings, which cover
+  H3: **Quarterly Estimated Tax Payments**: If a sole proprietor expects to owe $1,000 or more in taxes for the year, they mus
+  H4: **Business Deductions and Expenses**: Sole proprietors can deduct all ordinary and necessary business expenses (such as 
+
+Retrieved context:
+  [d1] doc=223624: Yes, you need to include income from your freelance work on your tax return. In the eyes of the IRS, this is self-employment incom...
+  [d2] doc=302049: "I assume your employer does standard withholding? Then what you need to do is figure what bracket that puts you in after you've d...
+  [d3] doc=254151: "If you receive a 1099-MISC from YouTube, that tells you what they stated to the IRS and leads into most tax preparation software ...
+  [d4] doc=223170: Since your YouTube income is considered self-employment income and because you probably already made more than $400 in net income ...
+  [d5] doc=174025: You are right that even if you do not receive a 1099-MISC, you still need to report all income to the IRS. Report the $40 on Sched...
+
+Answer:
+  Freelance income for a sole proprietor is treated as self-employment income and must be reported on Schedule C or Schedule C-EZ on the full 1040 form (not the 1040EZ) [d1]. You must pay self-employment tax of approximately 12-13% for Social Security/Medicare on this income [d2], and you have a filing obligation once your net income exceeds $400 [d4]. All freelance income must be reported to the IRS regardless of whether you receive a 1099-MISC form or the amount earned [d5].
+
+citation grounding: 1.00
+==============================================================================
