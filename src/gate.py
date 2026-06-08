@@ -32,10 +32,15 @@ def gate_features(scores: Sequence[float]) -> List[float]:
     case is top-100). Indices beyond the available length degrade gracefully — the "background"
     falls back to whatever sits below rank 20, and the top-k windows clip to the array.
     """
-    s = np.sort(np.asarray(scores, dtype=float))[::-1]
+    s = np.asarray(scores, dtype=float)
+    if s.ndim != 1:
+        raise ValueError("scores must be a 1-D similarity vector")
     n = s.size
     if n < 2:
         raise ValueError("need at least 2 scores to characterise the curve")
+    if not np.all(np.isfinite(s)):
+        raise ValueError("scores contain NaN/inf")
+    s = np.sort(s)[::-1]
     top1 = s[0]
     top5_mean = s[: min(5, n)].mean()
     gap12 = s[0] - s[1]
@@ -79,7 +84,10 @@ class RetrievalReliabilityGate:
         return np.asarray([gate_features(s) for s in score_curves], dtype=float)
 
     def fit(self, score_curves: Sequence[Sequence[float]], unreliable: Sequence[int]) -> "RetrievalReliabilityGate":
-        self._model.fit(self.featurize(score_curves), np.asarray(unreliable, dtype=int))
+        y = np.asarray(unreliable, dtype=int)
+        if np.unique(y).size < 2:
+            raise ValueError("fit needs both reliable (0) and unreliable (1) examples")
+        self._model.fit(self.featurize(score_curves), y)
         self._fitted = True
         return self
 

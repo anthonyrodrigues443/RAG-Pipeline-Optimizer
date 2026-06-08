@@ -41,6 +41,23 @@ def test_too_short_raises():
         gate_features([0.9])
 
 
+def test_nonfinite_raises():
+    with pytest.raises(ValueError):
+        gate_features([0.9, np.nan, 0.5])
+    with pytest.raises(ValueError):
+        gate_features([0.9, np.inf, 0.5])
+
+
+def test_non_1d_raises():
+    with pytest.raises(ValueError):
+        gate_features([[0.9, 0.8], [0.7, 0.6]])      # (2,2) matrix, not a curve
+
+
+def test_single_class_fit_raises():
+    with pytest.raises(ValueError):
+        RetrievalReliabilityGate().fit([_peaked() for _ in range(5)], [0] * 5)
+
+
 def test_peaked_has_larger_margin_and_smaller_tie_than_flat():
     fp = dict(zip(FEATURE_NAMES, gate_features(_peaked())))
     ff = dict(zip(FEATURE_NAMES, gate_features(_flat())))
