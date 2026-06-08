@@ -1,0 +1,6 @@
+gate,n,AUROC,AUPRC,F1,recall_unrel,prec_unrel,latency_s,cost_per_1k,parse_ok
+cheap gate (logreg),45,0.813,0.794,0.809,0.905,0.731,2e-05,1e-06,45/45
+baseline: top1<= 0.88,45,0.706,0.669,0.655,0.905,0.514,1e-05,1e-06,45/45
+LLM judge: haiku,45,0.779,0.765,0.72,0.857,0.621,15.8,0.0012,45/45
+LLM judge: opus,44,0.732,0.682,0.609,0.667,0.56,9.4,0.018,44/45
+LLM judge: codex,45,0.774,0.662,0.739,0.81,0.68,18.7,0.06,45/45

@@ -128,3 +128,38 @@ Primary metric **nDCG@10** throughout (BEIR standard). Retriever backbone after 
 
 ### FINAL production recommendation (all 7 phases)
 **E5-base-v2, whole-doc, exact (Flat) search below ~40k vectors / HNSW ef=128 above; skip the cross-encoder re-ranker entirely (redundant even on HyDE×N's better candidates); apply HyDE×N when an LLM-budget exists (especially on abstract-like corpora), else free PRF for a recall bump; generate with a cheap model (Haiku) + citation enforcement for the easy/mid majority and reserve a frontier generator for the hard tail.** End-to-end (Phase 7), this pipeline ties the unreachable gold-oracle on answer correctness (0.604) while beating naive RAG (0.542). Retrieval gains past "good enough" barely move the answer, but a *wrong* retrieval actively poisons it (correctness below closed-book at 0.83 faithfulness) — so spend the budget on retrieval **reliability**, not extra ranking precision. Production code: `src/pipeline.py` · `src/predict.py` · `src/evaluate.py`; demo: `app.py`. **Project complete (7/7).**
+
+---
+
+## Phase 8 — The Retrieval-Reliability Gate (iterate & improve)
+*Question: the project closed on "spend the budget on retrieval **reliability**, not ranking precision." So can you **detect** unreliable retrieval at inference time, with no gold labels and no second model — and does a cheap gate beat a frontier LLM judge?*
+*(Detection: all 1,271 judged queries × 3 BEIR corpora, label = gold absent from E5 top-5, base rate 33.1%. LLM head-to-head: balanced n=45, Haiku+Opus+Codex. Selective RAG: Phase-6 FiQA generation set, n=24.)*
+
+**Exp 8.1 — single-signal AUROC (the obvious baseline is weak):**
+| signal | AUROC | | signal | AUROC |
+|--------|------:|-|--------|------:|
+| entropy (top-20 softmax) | 0.803 | | gap15 | 0.769 |
+| margin_bg (top1 − bg[20:100]) | 0.800 | | frac_tie | 0.764 |
+| std10 | 0.795 | | **top1 cosine** | **0.633** |
+| | | | top5_mean | 0.533 |
+
+**Exp 8.2 — cheap learned gate + leave-one-corpus-out:**
+| eval | logreg AUROC | histgb AUROC |
+|------|-------------:|-------------:|
+| pooled 5-fold | **0.801** | 0.770 |
+| LOCO held-out SciFact | **0.833** | 0.827 |
+| LOCO held-out NFCorpus | **0.810** | 0.754 |
+| LOCO held-out FiQA | **0.748** | 0.673 |
+Latency **188 µs/query**. Logreg > HistGBM everywhere.
+
+**Exp 8.3 — vs LLM-as-judge (balanced n=45, base rate 0.47):**
+| gate | AUROC | F1 | recall(unrel) | latency | cost/1k |
+|------|------:|---:|----:|--------:|--------:|
+| **cheap gate (logreg, 188 µs)** | **0.813** | **0.809** | **0.905** | 0.00002 s | $1e-6 |
+| Claude Haiku | 0.779 | 0.720 | 0.857 | 15.8 s | $0.0012 |
+| Codex (GPT) | 0.774 | 0.739 | 0.810 | 18.7 s | $0.060 |
+| Claude Opus | 0.732 | 0.609 | **0.667** | 9.4 s | $0.018 |
+
+**Exp 8.4 — selective RAG (FiQA, n=24):** always-strong 0.542 · always-HyDE×N 0.604 · always-closed 0.396 · oracle 0.688. **Policy A (flag→closed-book) HURTS** monotonically (→0.46). **Policy B (flag→escalate HyDE×N) reaches 0.583 = 66% of the full-HyDE gain by escalating only 58% of queries (42% of LLM calls saved).**
+
+**Findings:** (1) **The similarity score everyone thresholds on is nearly useless** for reliability (top1 AUROC 0.63; top5_mean ≈ random); the *shape* of the cosine curve carries it (margin/entropy/tie-cluster ≈ 0.80) — when unreliable, 58% of the top-20 tie within 0.02 of the top vs 27% when reliable. (2) **A 188 µs logistic regression beats Haiku, Opus and Codex** as a reliability judge (AUROC 0.813 vs ≤0.779), generalises cross-corpus (LOCO 0.75–0.83), at 10⁴–10⁵× lower cost/latency. (3) **Frontier LLMs are partly blind to the poison they audit** — Opus (most confident) has the *lowest* unreliable-recall (0.667), fooled by topical-but-wrong context. (4) **Detection ≠ remediation:** closed-book fallback hurts; gate-driven HyDE×N escalation recovers ⅔ of the gain at half the LLM cost — the gate's job is to *spend the expensive retrieval where it's needed*, not to abstain. Reusable: `src/gate.py` (`RetrievalReliabilityGate`) + 6 offline tests.

@@ -319,6 +319,34 @@ vs whole-document?
 
 ---
 
+### Phase 8: The Retrieval-Reliability Gate — beating the LLM judge with 188 µs of NumPy — 2026-06-08
+
+<table>
+<tr>
+<td valign="top" width="38%">
+
+**What was built:** The mechanism the 7-phase verdict implied — a gate ([`src/gate.py`](src/gate.py), `RetrievalReliabilityGate`) that, from the retriever's **own cosine score curve** (no gold, no second model, no LLM), predicts whether the top-5 context is reliable enough to ground an answer. Label = gold absent from top-5 over all **1,271** BEIR queries. Then a head-to-head vs Claude Haiku / Opus / Codex as zero-shot reliability judges, and a downstream selective-RAG test.<br><br>
+**What worked best:** an 8-feature logistic regression — pooled AUROC **0.801**, leave-one-corpus-out **0.75–0.83**, in **188 µs/query**.
+
+</td>
+<td align="center" width="24%">
+
+<img src="results/phase8_roc.png" width="240">
+
+</td>
+<td valign="top" width="38%">
+
+**Headline:** the 188 µs gate **beats all three frontier LLM judges** on a balanced n=45 set — AUROC **0.813 / F1 0.809 / unreliable-recall 0.905** vs Haiku 0.779/0.72/0.857, Codex 0.774/0.739/0.810, Opus 0.732/0.609/**0.667** — at ~10⁴–10⁵× lower cost and latency.<br><br>
+**Counterintuitive:** the similarity score everyone thresholds on is *nearly useless* (top-1 cosine AUROC **0.63**; top5-mean ≈ random). The **shape** of the curve is the signal — when retrieval is unreliable, 58% of the top-20 tie within 0.02 of the top vs 27% when reliable.<br><br>
+**Blind spot:** Opus, the most confident judge, has the **lowest** unreliable-recall (0.667) — fooled by topical-but-wrong context the geometry isn't.<br><br>
+**Detection ≠ remediation:** closed-book fallback *hurts*; gate-driven **HyDE×N escalation** recovers ⅔ of the gain at half the LLM calls. Spend the expensive retrieval *where it's needed*.
+
+</td>
+</tr>
+</table>
+
+---
+
 ## Roadmap
 | Phase | Focus | Status |
 |------:|-------|--------|
@@ -329,6 +357,7 @@ vs whole-document?
 | 5 | Query techniques (HyDE, multi-query, step-back) + **LLM head-to-head** | ✅ |
 | 6 | Generation faithfulness (RAGAS) + backward-link rerank + **frontier generators** | ✅ |
 | 7 | End-to-end optimal pipeline + Streamlit UI + tests | ✅ |
+| 8 | **Retrieval-reliability gate** — score-curve features vs **LLM-as-judge** + selective escalation | ✅ |
 
 ## Datasets
 Three **BEIR** tasks, loaded at runtime from the HF Hub (nothing committed): **SciFact** (clean, sparse-binary —

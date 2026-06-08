@@ -1,0 +1,15 @@
+gate_thr,mean_correctness,frac_rerouted,policy
+1.01,0.542,0.0,closed_fallback
+0.7,0.521,0.292,closed_fallback
+0.6,0.521,0.375,closed_fallback
+0.5,0.458,0.583,closed_fallback
+0.4,0.458,0.667,closed_fallback
+0.3,0.438,0.75,closed_fallback
+-0.01,0.396,1.0,closed_fallback
+1.01,0.542,0.0,hyde_escalate
+0.7,0.562,0.292,hyde_escalate
+0.6,0.562,0.375,hyde_escalate
+0.5,0.583,0.583,hyde_escalate
+0.4,0.583,0.667,hyde_escalate
+0.3,0.583,0.75,hyde_escalate
+-0.01,0.604,1.0,hyde_escalate
